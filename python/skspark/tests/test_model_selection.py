@@ -30,22 +30,25 @@ class AllTests(unittest.TestCase):
 
 class GridSearchSparkWrapper(GridSearchCV):
     def __init__(self, estimator, param_grid, scoring=None, fit_params=None,
-                 n_jobs=1, iid=True, refit=True, cv=None, verbose=0,
-                 pre_dispatch='2*n_jobs', error_score='raise'):
+                 n_jobs=1, iid='warn', refit=True, cv=None, verbose=0,
+                 pre_dispatch='2*n_jobs', error_score='raise-deprecating',
+                 return_train_score="warn"):
         super(GridSearchSparkWrapper, self).__init__(
             AllTests.spark, estimator, param_grid, scoring, fit_params, n_jobs,
-            iid, refit, cv, verbose, pre_dispatch, error_score)
+            iid, refit, cv, verbose, pre_dispatch, error_score,
+            return_train_score)
 
 
 class RandomizedSearchSparkWrapper(RandomizedSearchCV):
-    def __init__(self, estimator, param_distributions, n_iter=10, scoring=None,
-                 fit_params=None, n_jobs=1, iid=True, refit=True, cv=None,
-                 verbose=0, pre_dispatch='2*n_jobs', random_state=None,
-                 error_score='raise'):
+    def __init__(self, estimator, param_distributions, n_iter=10,
+                 scoring=None, fit_params=None, n_jobs=1, iid='warn',
+                 refit=True, cv=None, verbose=0, pre_dispatch='2*n_jobs',
+                 random_state=None, error_score='raise-deprecating',
+                 return_train_score="warn"):
         super(RandomizedSearchSparkWrapper, self).__init__(
             AllTests.spark, estimator, param_distributions, n_iter, scoring,
             fit_params, n_jobs, iid, refit, cv, verbose, pre_dispatch,
-            random_state, error_score)
+            random_state, error_score, return_train_score)
 
 
 def _create_method(method):
