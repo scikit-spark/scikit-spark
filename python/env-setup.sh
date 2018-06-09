@@ -11,7 +11,7 @@ for lib in "${SPARK_HOME}/python/lib"/*zip ; do
   LIBS=${LIBS}:${lib}
 done
 
-#export PYTHONPATH=${PYTHONPATH}:${SPARK_HOME}/python:${LIBS}:.
+export PYTHONPATH=${PYTHONPATH}:${SPARK_HOME}/python:${LIBS}:.
 
 export PYTHONPATH=${PYTHONPATH}:skspark
 

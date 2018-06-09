@@ -150,7 +150,7 @@ class GridSearchCV(BaseSearchCV):
     Examples
     --------
     >>> from sklearn import svm, datasets
-    >>> from sklearn.model_selection import GridSearchCV
+    >>> from skspark.model_selection import GridSearchCV
     >>> iris = datasets.load_iris()
     >>> parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
     >>> svc = svm.SVC(gamma="scale")
