@@ -2,3 +2,4 @@
 spark-warehouse
 *.pyc
 *.log
+metastore_db

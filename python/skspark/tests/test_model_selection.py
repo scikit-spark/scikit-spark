@@ -1,17 +1,20 @@
-import unittest
-
 import sklearn.model_selection
-from skspark.model_selection import GridSearchCV, RandomizedSearchCV
-from skspark.tests.spark_test import spark_test
+from skspark.model_selection import RandomizedSearchCV as \
+    SparkRandomizedSearchCV
+from skspark.model_selection import GridSearchCV as SparkGridSearchCV
+
+from sklearn.model_selection import RandomizedSearchCV as \
+    SklearnRandomizedSearchCV
+from sklearn.model_selection import GridSearchCV as SklearnGridSearchCV
+
+from skspark.tests.pyspark_test import PySparkTest
 
 
 # Overwrite the sklearn GridSearch in this suite so that we can run the same
 # tests with the same parameters.
 
 
-@spark_test
-class AllTests(unittest.TestCase):
-
+class AllTests(PySparkTest):
     # After testing, make sure to revert sklearn to normal
     # (see _add_to_module())
     @classmethod
@@ -28,24 +31,34 @@ class AllTests(unittest.TestCase):
         del sklearn.model_selection.RandomizedSearchCV_original
 
 
-class GridSearchSparkWrapper(GridSearchCV):
+class GridSearchCV(SparkGridSearchCV):
+    """
+    Wrapper to make the scikit-spark version of GridSearchCV seem like
+    the scikit-learn version. This allows it to be used in the
+    existing scikit-learn tests.
+    """
     def __init__(self, estimator, param_grid, scoring=None, fit_params=None,
                  n_jobs=1, iid='warn', refit=True, cv=None, verbose=0,
-                 pre_dispatch='2*n_jobs', error_score='raise-deprecating',
+                 pre_dispatch='2*n_jobs', error_score='raise',
                  return_train_score="warn"):
-        super(GridSearchSparkWrapper, self).__init__(
+        super(GridSearchCV, self).__init__(
             AllTests.spark, estimator, param_grid, scoring, fit_params, n_jobs,
             iid, refit, cv, verbose, pre_dispatch, error_score,
             return_train_score)
 
 
-class RandomizedSearchSparkWrapper(RandomizedSearchCV):
+class RandomizedSearchCV(SparkRandomizedSearchCV):
+    """
+    Wrapper to make the scikit-spark version of RandomizedSearchCV seem like
+    the scikit-learn version. This allows it to be used in the
+    existing scikit-learn tests.
+    """
     def __init__(self, estimator, param_distributions, n_iter=10,
                  scoring=None, fit_params=None, n_jobs=1, iid='warn',
                  refit=True, cv=None, verbose=0, pre_dispatch='2*n_jobs',
-                 random_state=None, error_score='raise-deprecating',
+                 random_state=None, error_score='raise',
                  return_train_score="warn"):
-        super(RandomizedSearchSparkWrapper, self).__init__(
+        super(RandomizedSearchCV, self).__init__(
             AllTests.spark, estimator, param_distributions, n_iter, scoring,
             fit_params, n_jobs, iid, refit, cv, verbose, pre_dispatch,
             random_state, error_score, return_train_score)
@@ -59,23 +72,23 @@ def _create_method(method):
 
 
 def _add_to_module():
-    SKGridSearchCV = sklearn.model_selection.GridSearchCV
-    sklearn.model_selection.GridSearchCV = GridSearchSparkWrapper
-    sklearn.model_selection.GridSearchCV_original = SKGridSearchCV
+    sklearn.model_selection.GridSearchCV = GridSearchCV
+    sklearn.model_selection.GridSearchCV_original = SklearnGridSearchCV
 
-    SKRandomizedSearchCV = sklearn.model_selection.RandomizedSearchCV
-    sklearn.model_selection.RandomizedSearchCV = RandomizedSearchSparkWrapper
-    sklearn.model_selection.RandomizedSearchCV_original = SKRandomizedSearchCV
+    sklearn.model_selection.RandomizedSearchCV = RandomizedSearchCV
+    sklearn.model_selection.RandomizedSearchCV_original = \
+        SklearnRandomizedSearchCV
 
     from sklearn.model_selection.tests import test_search
-    all_methods = [(mname, method) for (mname, method) in
-                   test_search.__dict__.items()
-                   if mname.startswith("test_")]
+    all_tests = [
+        test
+        for (method_name, test) in test_search.__dict__.items()
+        if method_name.startswith("test_")
+    ]
 
-    for name, method in all_methods:
-        method_for_test = _create_method(method)
-        method_for_test.__name__ = name
-        setattr(AllTests, method.__name__, method_for_test)
+    for test in all_tests:
+        test_to_add = _create_method(test)
+        setattr(AllTests, test.__name__, test_to_add)
 
 
 _add_to_module()
