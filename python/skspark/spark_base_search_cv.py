@@ -97,20 +97,9 @@ class SparkBaseSearchCV(BaseSearchCV):
                                      n_candidates * n_splits))
 
         base_estimator = clone(self.estimator)
-        pre_dispatch = self.pre_dispatch
 
-        out = Parallel(
-            n_jobs=self.n_jobs, verbose=self.verbose,
-            pre_dispatch=pre_dispatch
-        )(delayed(_fit_and_score)(clone(base_estimator), X, y, scorers, train,
-                                  test, self.verbose, parameters,
-                                  fit_params=fit_params,
-                                  return_train_score=self.return_train_score,
-                                  return_n_test_samples=True,
-                                  return_times=True, return_parameters=False,
-                                  error_score=self.error_score)
-          for parameters, (train, test) in product(candidate_params,
-                                                   cv.split(X, y, groups)))
+        out = self._run_sklearn_fit(base_estimator, X, y, scorers, fit_params,
+                                    candidate_params, cv, groups)
 
         # if one choose to see train score, "out" will contain train score info
         if self.return_train_score:
@@ -221,6 +210,26 @@ class SparkBaseSearchCV(BaseSearchCV):
         self.n_splits_ = n_splits
 
         return self
+
+    def _run_sklearn_fit(self, base_estimator, X, y, scorers, fit_params,
+                         candidate_params, cv, groups):
+        """Run fitting locally"""
+        pre_dispatch = self.pre_dispatch
+
+        out = Parallel(
+            n_jobs=self.n_jobs, verbose=self.verbose,
+            pre_dispatch=pre_dispatch
+        )(delayed(_fit_and_score)(clone(base_estimator), X, y, scorers, train,
+                                  test, self.verbose, parameters,
+                                  fit_params=fit_params,
+                                  return_train_score=self.return_train_score,
+                                  return_n_test_samples=True,
+                                  return_times=True, return_parameters=False,
+                                  error_score=self.error_score)
+          for parameters, (train, test) in product(candidate_params,
+                                                   cv.split(X, y, groups)))
+
+        return out
 
     def __getstate__(self):
         """To not try to pickle the non-serializable SparkSession"""
