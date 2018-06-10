@@ -2,8 +2,10 @@ from sklearn.model_selection import ParameterGrid, ParameterSampler
 from sklearn.model_selection._search import BaseSearchCV, _check_param_grid
 from pyspark.sql import SparkSession
 
+from skspark.spark_base_search_cv import SparkBaseSearchCV
 
-class GridSearchCV(BaseSearchCV):
+
+class GridSearchCV(SparkBaseSearchCV):
     """Exhaustive search over specified parameter values for an estimator.
 
     Important members are fit, predict.
@@ -297,9 +299,9 @@ class GridSearchCV(BaseSearchCV):
                  verbose=0, pre_dispatch='2*n_jobs', error_score='raise',
                  return_train_score="warn"):
         super(GridSearchCV, self).__init__(
-            estimator=estimator, scoring=scoring, fit_params=fit_params,
-            n_jobs=n_jobs, iid=iid, refit=refit, cv=cv, verbose=verbose,
-            pre_dispatch=pre_dispatch, error_score=error_score,
+            spark=spark, estimator=estimator, scoring=scoring,
+            fit_params=fit_params, n_jobs=n_jobs, iid=iid, refit=refit, cv=cv,
+            verbose=verbose, pre_dispatch=pre_dispatch, error_score=error_score,
             return_train_score=return_train_score)
         self.param_grid = param_grid
         _check_param_grid(param_grid)
@@ -309,7 +311,7 @@ class GridSearchCV(BaseSearchCV):
         return ParameterGrid(self.param_grid)
 
 
-class RandomizedSearchCV(BaseSearchCV):
+class RandomizedSearchCV(SparkBaseSearchCV):
     """Randomized search on hyper parameters.
 
     RandomizedSearchCV implements a "fit" and a "score" method.
@@ -588,13 +590,15 @@ class RandomizedSearchCV(BaseSearchCV):
                  scoring=None, fit_params=None, n_jobs=1, iid=True, refit=True,
                  cv=None, verbose=0, pre_dispatch='2*n_jobs', random_state=None,
                  error_score='raise', return_train_score="warn"):
+
         self.param_distributions = param_distributions
         self.n_iter = n_iter
         self.random_state = random_state
+
         super(RandomizedSearchCV, self).__init__(
-            estimator=estimator, scoring=scoring, fit_params=fit_params,
-            n_jobs=n_jobs, iid=iid, refit=refit, cv=cv, verbose=verbose,
-            pre_dispatch=pre_dispatch, error_score=error_score,
+            spark=spark, estimator=estimator, scoring=scoring,
+            fit_params=fit_params, n_jobs=n_jobs, iid=iid, refit=refit, cv=cv,
+            verbose=verbose, pre_dispatch=pre_dispatch, error_score=error_score,
             return_train_score=return_train_score)
 
     def _get_param_iterator(self):

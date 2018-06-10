@@ -4,7 +4,7 @@ from functools import partial
 
 import six
 import numpy as np
-from numpy import product
+from itertools import product
 from sklearn.base import is_classifier, clone
 from sklearn.externals.joblib import Parallel, delayed
 from sklearn.metrics.scorer import _check_multimetric_scoring
@@ -221,3 +221,9 @@ class SparkBaseSearchCV(BaseSearchCV):
         self.n_splits_ = n_splits
 
         return self
+
+    def __getstate__(self):
+        """To not try to pickle the non-serializable SparkSession"""
+        d = dict(self.__dict__)
+        del d['spark']
+        return d
