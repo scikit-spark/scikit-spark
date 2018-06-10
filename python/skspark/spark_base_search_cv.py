@@ -246,9 +246,8 @@ class SparkBaseSearchCV(BaseSearchCV):
 
     def _run_skspark_fit(self, base_estimator, X, y, scorers, fit_params,
                          candidate_params, cv, groups):
-        param_grid = [(parameters, train, test) for parameters in
-                      candidate_params
-                      for train, test in list(cv.split(X, y, groups))]
+        param_grid = [(parameters, train, test) for parameters, (train, test)
+                      in product(candidate_params, cv.split(X, y, groups))]
 
         # Because the original python code expects a certain order for the
         # elements, we need to respect it.
@@ -298,9 +297,8 @@ class SparkBaseSearchCV(BaseSearchCV):
 
     def _run_skspark_mock_fit(self, base_estimator, X, y, scorers, fit_params,
                               candidate_params, cv, groups):
-        param_grid = [(parameters, train, test) for parameters in
-                      candidate_params
-                      for train, test in list(cv.split(X, y, groups))]
+        param_grid = [(parameters, train, test) for parameters, (train, test)
+                      in product(candidate_params, cv.split(X, y, groups))]
 
         # Because the original python code expects a certain order for the
         # elements, we need to respect it.
