@@ -100,19 +100,15 @@ class SparkBaseSearchCV(BaseSearchCV):
 
         base_estimator = clone(self.estimator)
 
-        v = 2
-        if v == 1:
+        method = "spark"
+        if method == "sklearn":
             out = self._run_sklearn_fit(base_estimator, X, y, scorers,
                                         fit_params, candidate_params, cv,
                                         groups)
-        elif v == 2:
+        elif method == "spark":
             out = self._run_skspark_fit(base_estimator, X, y, scorers,
                                         fit_params, candidate_params, cv,
                                         groups)
-        elif v == 3:
-            out = self._run_skspark_mock_fit(
-                base_estimator, X, y, scorers, fit_params, candidate_params,
-                cv, groups)
 
         # if one choose to see train score, "out" will contain train score info
         if self.return_train_score:
@@ -298,50 +294,6 @@ class SparkBaseSearchCV(BaseSearchCV):
 
         X_bc.unpersist()
         y_bc.unpersist()
-        return out
-
-    def _run_skspark_mock_fit(self, base_estimator, X, y, scorers, fit_params,
-                              candidate_params, cv, groups):
-        param_grid = [(parameters, train, test) for parameters, (train, test)
-                      in product(candidate_params, cv.split(X, y, groups))]
-
-        # Because the original python code expects a certain order for the
-        # elements, we need to respect it.
-        indexed_param_grid = list(zip(range(len(param_grid)), param_grid))
-        # par_param_grid = self.spark.sparkContext.parallelize(
-        #     indexed_param_grid, len(indexed_param_grid))
-
-        # X_bc = self.spark.sparkContext.broadcast(X)
-        # y_bc = self.spark.sparkContext.broadcast(y)
-
-        verbose = self.verbose
-        error_score = self.error_score
-        return_train_score = self.return_train_score
-
-        def spark_task(tup):
-            (index, (parameters, train, test)) = tup
-            local_estimator = clone(base_estimator)
-            local_X = X
-            local_y = y
-            res = _fit_and_score(
-                local_estimator, local_X, local_y, scorers, train, test,
-                verbose, parameters, fit_params,
-                return_train_score=return_train_score,
-                return_parameters=True,
-                return_n_test_samples=True, return_times=True,
-                error_score=error_score)
-            return index, res
-
-        # indexed_out0 = dict(par_param_grid.map(spark_task).collect())
-
-        indexed_out0 = {}
-        for i, grid in indexed_param_grid:
-            index, res = spark_task((i, grid))
-            indexed_out0[index] = res
-        out = [indexed_out0[idx][:-1] for idx in range(len(param_grid))]
-
-        # X_bc.unpersist()
-        # y_bc.unpersist()
         return out
 
     def __getstate__(self):
