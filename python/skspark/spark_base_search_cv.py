@@ -268,28 +268,33 @@ class SparkBaseSearchCV(BaseSearchCV):
             local_X = X_bc.value
             local_y = y_bc.value
 
-            res, error = None, None
+            with warnings.catch_warnings(record=True) as warns:
+                try:
+                    res = _fit_and_score(
+                        local_estimator, local_X, local_y, scorers, train, test,
+                        verbose, parameters, fit_params,
+                        return_train_score=return_train_score,
+                        return_parameters=True,
+                        return_n_test_samples=True, return_times=True,
+                        error_score=error_score)
+                    error = None
+                except Exception, error:
+                    res = None
 
-            try:
-                res = _fit_and_score(
-                    local_estimator, local_X, local_y, scorers, train, test,
-                    verbose, parameters, fit_params,
-                    return_train_score=return_train_score,
-                    return_parameters=True,
-                    return_n_test_samples=True, return_times=True,
-                    error_score=error_score)
-            except (ValueError, AssertionError), e:
-                error = e
-            return index, (res, error)
+            return index, {"results": res, "errors": error, "warnings": warns}
 
         indexed_out0 = dict(par_param_grid.map(spark_task).collect())
 
+        # process errors and warnings
         for i in range(len(param_grid)):
-            error = indexed_out0[i][-1]
-            if error is not None:
-                raise error
+            error_to_be_raised = indexed_out0[i]["errors"]
+            if error_to_be_raised is not None:
+                raise error_to_be_raised
 
-        out = [indexed_out0[idx][0][:-1] for idx in range(len(param_grid))]
+            for warn in indexed_out0[i]["warnings"]:
+                warnings.warn(warn.message, warn.category)
+
+        out = [indexed_out0[i]["results"][:-1] for i in range(len(param_grid))]
 
         X_bc.unpersist()
         y_bc.unpersist()
