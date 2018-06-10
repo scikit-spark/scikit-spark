@@ -15,7 +15,7 @@ from sklearn.utils import indexable
 from sklearn.model_selection._search import BaseSearchCV
 from sklearn.utils.deprecation import DeprecationDict
 from sklearn.utils.fixes import MaskedArray
-from sklearn.utils.stats import rankdata
+from scipy.stats import rankdata
 
 
 class SparkBaseSearchCV(BaseSearchCV):
@@ -224,6 +224,6 @@ class SparkBaseSearchCV(BaseSearchCV):
 
     def __getstate__(self):
         """To not try to pickle the non-serializable SparkSession"""
-        d = dict(self.__dict__)
-        del d['spark']
-        return d
+        attributes = dict(self.__dict__)
+        del attributes['spark']
+        return attributes

@@ -1,6 +1,5 @@
 from sklearn.model_selection import ParameterGrid, ParameterSampler
-from sklearn.model_selection._search import BaseSearchCV, _check_param_grid
-from pyspark.sql import SparkSession
+from sklearn.model_selection._search import _check_param_grid
 
 from skspark.spark_base_search_cv import SparkBaseSearchCV
 
