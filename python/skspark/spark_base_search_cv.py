@@ -278,7 +278,7 @@ class SparkBaseSearchCV(BaseSearchCV):
                     return_parameters=True,
                     return_n_test_samples=True, return_times=True,
                     error_score=error_score)
-            except ValueError, e:
+            except (ValueError, AssertionError), e:
                 error = e
             return index, (res, error)
 
