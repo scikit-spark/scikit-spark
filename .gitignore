@@ -3,3 +3,6 @@ spark-warehouse
 *.pyc
 *.log
 metastore_db
+scikit_spark.egg-info
+dist
+build

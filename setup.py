@@ -17,18 +17,21 @@ install_requires = [
     "six==1.11.0"
 ]
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name="scikit-spark",
     version="0.1.0rc1",
     author="Ganesh N. Sivalingam",
     author_email="g.n.sivalingam@gmail.com",
     description=description,
+    long_description=long_description,
     keywords=keywords,
-    packages=["skspark"],
+    packages=["python/skspark"],
     url="https://github.com/scikit-spark/scikit-spark",
     install_requires=install_requires,
-    licence="Apache 2.0"
+    license="Apache 2.0"
 )
 
 # TODO add classifiers
-# TODO add long_description (README.md)
