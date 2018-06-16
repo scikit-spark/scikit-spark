@@ -10,9 +10,10 @@ The functionality is based on `sklearn.model_selection` module rather than the
 deprecated and soon to be removed `sklearn.grid_search`. The new versions 
 contain several nicer features and `scikit-spark` maintains full compatibility.
 
+## Installation
+*Coming soon*
+
 ## Usage
-
-
 
 
 ### Grid search
@@ -45,6 +46,8 @@ clf.fit(iris.data, iris.target)
 *The docstrings are modifications of the Scikit-Learn ones and are still being
 converted to specifically refer to this project.* 
 
-## Reducing RAM usage 
+## Performance optimisations 
+
+### Reducing RAM usage 
 *Coming soon*
 
