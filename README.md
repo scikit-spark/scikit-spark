@@ -1,9 +1,9 @@
 # Spark acceleration for Scikit-Learn
 
 This project is a major re-write of the 
-[spark-sklearn](https://github.com/gnsiva/spark-sklearn) project, which seems
-to no longer be under development. It focuses specifically on the acceleration 
-of Scikit-Learn's cross validation functionality using PySpark.
+[spark-sklearn](https://github.com/databricks/spark-sklearn) project, which 
+seems to no longer be under development. It focuses specifically on the 
+acceleration of Scikit-Learn's cross validation functionality using PySpark.
 
 ### Improvements over spark-sklearn
 The functionality is based on `sklearn.model_selection` module rather than the 
