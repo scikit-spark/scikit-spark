@@ -4,8 +4,10 @@ from pyspark.sql import SparkSession
 
 
 class PySparkTest(unittest.TestCase):
-    spark = None
-
+    """
+    Based on this blog post:
+    https://blog.cambridgespark.com/unit-testing-with-pyspark-fb31671b1ad8
+    """
     @classmethod
     def suppress_py4j_logging(cls):
         logger = logging.getLogger("py4j")
