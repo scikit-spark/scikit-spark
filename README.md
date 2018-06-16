@@ -11,15 +11,28 @@ deprecated and soon to be removed `sklearn.grid_search`. The new versions
 contain several nicer features and `scikit-spark` maintains full compatibility.
 
 ## Installation
-*Coming soon*
+The package can be installed through pip:
+```bash
+pip install scikit-spark
+```
+
+It has so far only been tested with Spark 2.2.0 and up, but may work with 
+older versions. 
 
 ## Usage
 
+The functionality here is meant to as closely resemble using Scikit-Learn as 
+possible. The only differences are the import and that the first argument in the
+constructor should be a `SparkSession` as shown below. 
 
-### Grid search
+This example is adapted from the Scikit-Learn documentation. It instantiates
+a local `SparkSession`, and distributes the cross validation folds and 
+iterations using this. In actual use, to get the benefit of this package it 
+should be used distributed across several machines with Spark as running it 
+locally is slower than the `Scikit-Learn` parallelisation implementation.
+
 ```python
 from sklearn import svm, datasets
-from skspark.model_selection import GridSearchCV
 from pyspark.sql import SparkSession
 
 iris = datasets.load_iris()
@@ -31,8 +44,17 @@ spark = SparkSession.builder\
     .appName("skspark-grid-search-doctests")\
     .getOrCreate()
 
-clf = GridSearchCV(spark, svc, parameters)
-clf.fit(iris.data, iris.target)
+# How to run grid search
+from skspark.model_selection import GridSearchCV
+
+gs = GridSearchCV(spark, svc, parameters)
+gs.fit(iris.data, iris.target)
+
+# How to run random search
+from skspark.model_selection import RandomizedSearchCV
+
+rs = RandomizedSearchCV(spark, svc, parameters)
+rs.fit(iris.data, iris.target)
 ```
 
 ## Current and upcoming functionality
