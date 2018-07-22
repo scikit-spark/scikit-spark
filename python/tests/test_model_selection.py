@@ -7,7 +7,7 @@ from sklearn.model_selection import RandomizedSearchCV as \
     SklearnRandomizedSearchCV
 from sklearn.model_selection import GridSearchCV as SklearnGridSearchCV
 
-from skspark.tests.pyspark_test import PySparkTest
+from tests.pyspark_test import PySparkTest
 
 
 # Overwrite the sklearn GridSearch in this suite so that we can run the same
