@@ -42,44 +42,6 @@ def check_hyperparameter_searcher_with_fit_params(spark, klass, **klass_kwargs):
 
 class TestSpecificRegressionTests(PySparkTest):
     """This class contains some select tests taken from scikit-learn."""
-    def test_return_train_score_warn(self):
-        # Test that warnings are raised. Will be removed in 0.21
-
-        X = np.arange(100).reshape(10, 10)
-        y = np.array([0] * 5 + [1] * 5)
-        grid = {'C': [1, 2]}
-
-        estimators = [
-            GridSearchCV(self.spark, LinearSVC(random_state=0), grid),
-            RandomizedSearchCV(
-                self.spark, LinearSVC(random_state=0), grid, n_iter=2)
-        ]
-
-        result = {}
-        for estimator in estimators:
-            for val in [True, False, 'warn']:
-                estimator.set_params(return_train_score=val)
-                result[val] = assert_no_warnings(estimator.fit, X,
-                                                 y).cv_results_
-
-        train_keys = ['split0_train_score', 'split1_train_score',
-                      'split2_train_score', 'mean_train_score',
-                      'std_train_score']
-        for key in train_keys:
-            msg = (
-                'You are accessing a training score ({!r}), '
-                'which will not be available by default '
-                'any more in 0.21. If you need training scores, '
-                'please set return_train_score=True').format(key)
-            train_score = assert_warns_message(FutureWarning, msg,
-                                               result['warn'].get, key)
-            assert np.allclose(train_score, result[True][key])
-            assert key not in result[False]
-
-        for key in result['warn']:
-            if key not in train_keys:
-                assert_no_warnings(result['warn'].get, key)
-
     def test_trivial_cv_results_attr(self):
         # Test search over a "grid" with only one point.
         # Non-regression test: grid_scores_ wouldn't be set by GridSearchCV.

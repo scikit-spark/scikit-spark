@@ -13,4 +13,9 @@
 
 # 0.1.0rc2
 
-- Fixed setup.py
+- Fixed setup.py import for skspark
+
+# 0.1.0rc4
+
+- Tests run in Python 2 and Python 3 now
+- Fixed README example (not enough parameters for RS to try)

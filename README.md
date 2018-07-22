@@ -36,7 +36,7 @@ from sklearn import svm, datasets
 from pyspark.sql import SparkSession
 
 iris = datasets.load_iris()
-parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
+parameters = {'kernel':('linear', 'rbf'), 'C':[0.01, 0.1, 1, 10, 100]}
 svc = svm.SVC()
 
 spark = SparkSession.builder\
