@@ -10,3 +10,7 @@
     - Docstrings for `GridSearchCV` and `RandomizedSearchCV`
     - Python 3 testing
     - Setting up travis
+
+# 0.1.0rc2
+
+- Fixed setup.py
