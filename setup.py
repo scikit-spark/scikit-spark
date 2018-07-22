@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 description = "Spark acceleration for Scikit-Learn cross validation techniques"
 
@@ -28,7 +28,8 @@ setup(
     description=description,
     long_description=long_description,
     keywords=keywords,
-    packages=["python/skspark"],
+    package_dir={"": "python"},
+    packages=find_packages("python", exclude="tests"),
     url="https://github.com/scikit-spark/scikit-spark",
     install_requires=install_requires,
     license="Apache 2.0"
