@@ -18,3 +18,4 @@
 # 0.1.0rc4
 
 - Tests run in Python 2 and Python 3 now
+- Fixed README example (not enough parameters for RS to try)
