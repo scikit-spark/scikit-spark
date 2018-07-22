@@ -264,6 +264,7 @@ class SparkBaseSearchCV(BaseSearchCV):
             local_X = X_bc.value
             local_y = y_bc.value
 
+            error = None
             with warnings.catch_warnings(record=True) as warns:
                 try:
                     res = _fit_and_score(
@@ -273,9 +274,9 @@ class SparkBaseSearchCV(BaseSearchCV):
                         return_parameters=True,
                         return_n_test_samples=True, return_times=True,
                         error_score=error_score)
-                    error = None
-                except Exception, error:
+                except Exception as e:
                     res = None
+                    error = e
 
             return index, {"results": res, "errors": error, "warnings": warns}
 
