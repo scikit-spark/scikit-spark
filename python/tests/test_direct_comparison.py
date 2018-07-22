@@ -7,7 +7,7 @@ from sklearn.svm import SVC
 from skspark.model_selection import GridSearchCV as SparkGridSearchCV
 from skspark.model_selection import RandomizedSearchCV \
     as SparkRandomizedSearchCV
-from skspark.tests.pyspark_test import PySparkTest
+from tests.pyspark_test import PySparkTest
 
 
 class TestDirectComparison(PySparkTest):
