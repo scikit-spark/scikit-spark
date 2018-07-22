@@ -15,6 +15,6 @@
 
 - Fixed setup.py import for skspark
 
-# 0.1.0rc3
+# 0.1.0rc4
 
 - Tests run in Python 2 and Python 3 now

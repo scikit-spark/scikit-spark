@@ -23,7 +23,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="scikit-spark",
-    version="0.1.0rc2",
+    version="0.1.0rc4",
     author="Ganesh N. Sivalingam",
     author_email="g.n.sivalingam@gmail.com",
     description=description,
