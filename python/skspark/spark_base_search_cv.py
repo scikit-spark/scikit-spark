@@ -16,6 +16,7 @@ from sklearn.model_selection._search import BaseSearchCV
 from sklearn.utils.deprecation import DeprecationDict
 from sklearn.utils.fixes import MaskedArray
 from scipy.stats import rankdata
+from pyspark.sql import SparkSession
 
 
 class SparkBaseSearchCV(BaseSearchCV):
@@ -28,7 +29,12 @@ class SparkBaseSearchCV(BaseSearchCV):
             estimator, scoring, fit_params, n_jobs, iid, refit, cv, verbose,
             pre_dispatch, error_score, return_train_score)
 
-        self.spark = spark
+        if isinstance(spark, SparkSession):
+            self.spark = spark
+        elif spark:
+            self.spark = SparkSession.builder.getOrCreate()
+        else:
+            self.spark = None
 
         # TODO: I'm not doing whatever pre_dispatch is supposed to do
 

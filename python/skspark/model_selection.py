@@ -153,7 +153,7 @@ class GridSearchCV(SparkBaseSearchCV):
             .master("local[*]")\
             .appName("skspark-grid-search-doctests")\
             .getOrCreate()
-    >>> clf = GridSearchCV(spark, svc, parameters)
+    >>> clf = GridSearchCV(svc, parameters)
     >>> clf.fit(iris.data, iris.target)
     ...                             # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
     GridSearchCV(cv=None, error_score=...,
@@ -300,10 +300,10 @@ class GridSearchCV(SparkBaseSearchCV):
 
     """
 
-    def __init__(self, spark, estimator, param_grid, scoring=None,
+    def __init__(self, estimator, param_grid, scoring=None,
                  fit_params=None, n_jobs=1, iid=True, refit=True, cv=None,
                  verbose=0, pre_dispatch='2*n_jobs', error_score='raise',
-                 return_train_score="warn"):
+                 return_train_score="warn", spark=True):
         super(GridSearchCV, self).__init__(
             spark=spark, estimator=estimator, scoring=scoring,
             fit_params=fit_params, n_jobs=n_jobs, iid=iid, refit=refit, cv=cv,
@@ -592,10 +592,10 @@ class RandomizedSearchCV(SparkBaseSearchCV):
 
     """
 
-    def __init__(self, spark, estimator, param_distributions, n_iter=10,
+    def __init__(self, estimator, param_distributions, n_iter=10,
                  scoring=None, fit_params=None, n_jobs=1, iid=True, refit=True,
                  cv=None, verbose=0, pre_dispatch='2*n_jobs', random_state=None,
-                 error_score='raise', return_train_score="warn"):
+                 error_score='raise', return_train_score="warn", spark=True):
 
         self.param_distributions = param_distributions
         self.n_iter = n_iter
