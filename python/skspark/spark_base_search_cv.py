@@ -100,12 +100,11 @@ class SparkBaseSearchCV(BaseSearchCV):
 
         base_estimator = clone(self.estimator)
 
-        method = "spark"
-        if method == "sklearn":
+        if self.spark is None:
             out = self._run_sklearn_fit(base_estimator, X, y, scorers,
                                         fit_params, candidate_params, cv,
                                         groups)
-        elif method == "spark":
+        else:
             out = self._run_skspark_fit(base_estimator, X, y, scorers,
                                         fit_params, candidate_params, cv,
                                         groups)
@@ -300,5 +299,6 @@ class SparkBaseSearchCV(BaseSearchCV):
     def __getstate__(self):
         """To not try to pickle the non-serializable SparkSession"""
         attributes = dict(self.__dict__)
-        del attributes['spark']
+        if 'spark' in attributes.keys():
+            del attributes['spark']
         return attributes
