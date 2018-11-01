@@ -14,7 +14,7 @@ class MiscTests(PySparkTest):
         iris = datasets.load_iris()
         parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
         svc = svm.SVC()
-        gs = GridSearchCV(self.spark, svc, parameters)
+        gs = GridSearchCV(svc, parameters, spark=True)
         gs.fit(iris.data, iris.target)
 
         # copying twice would throw an error before
@@ -29,5 +29,8 @@ class MiscTests(PySparkTest):
         iris = datasets.load_iris()
         parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
         svc = svm.SVC()
-        gs = GridSearchCV(spark=None, estimator=svc, param_grid=parameters)
+        gs = GridSearchCV(estimator=svc, param_grid=parameters, spark=False)
         gs.fit(iris.data, iris.target)
+        gs = GridSearchCV(estimator=svc, param_grid=parameters, spark=None)
+        gs.fit(iris.data, iris.target)
+        # TODO - add test conditions

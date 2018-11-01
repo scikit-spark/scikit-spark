@@ -40,9 +40,9 @@ class GridSearchCV(SparkGridSearchCV):
                  pre_dispatch='2*n_jobs', error_score='raise',
                  return_train_score="warn"):
         super(GridSearchCV, self).__init__(
-            AllTests.spark, estimator, param_grid, scoring, fit_params, n_jobs,
+            estimator, param_grid, scoring, fit_params, n_jobs,
             iid, refit, cv, verbose, pre_dispatch, error_score,
-            return_train_score)
+            return_train_score, spark=True)
 
 
 class RandomizedSearchCV(SparkRandomizedSearchCV):
@@ -57,9 +57,9 @@ class RandomizedSearchCV(SparkRandomizedSearchCV):
                  random_state=None, error_score='raise',
                  return_train_score="warn"):
         super(RandomizedSearchCV, self).__init__(
-            AllTests.spark, estimator, param_distributions, n_iter, scoring,
+            estimator, param_distributions, n_iter, scoring,
             fit_params, n_jobs, iid, refit, cv, verbose, pre_dispatch,
-            random_state, error_score, return_train_score)
+            random_state, error_score, return_train_score, spark=True)
 
 
 def _create_method(method):
