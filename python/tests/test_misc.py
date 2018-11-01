@@ -1,0 +1,33 @@
+import copy
+
+from sklearn import svm, datasets
+from sklearn.utils.testing import assert_true, assert_false
+
+from pyspark_test import PySparkTest
+from skspark.model_selection import GridSearchCV
+
+
+class MiscTests(PySparkTest):
+
+    def test_removing_spark_attribute(self):
+        # train an RS
+        iris = datasets.load_iris()
+        parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
+        svc = svm.SVC()
+        gs = GridSearchCV(self.spark, svc, parameters)
+        gs.fit(iris.data, iris.target)
+
+        # copying twice would throw an error before
+        assert_true(hasattr(gs, "spark"))
+        gs_copied = copy.deepcopy(gs)
+        assert_false(hasattr(gs_copied, "spark"))
+        gs_copied_again = copy.deepcopy(gs_copied)
+        assert_false(hasattr(gs_copied_again, "spark"))
+
+    def test_that_it_works_without_spark(self):
+        # train an RS
+        iris = datasets.load_iris()
+        parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
+        svc = svm.SVC()
+        gs = GridSearchCV(spark=None, estimator=svc, param_grid=parameters)
+        gs.fit(iris.data, iris.target)
