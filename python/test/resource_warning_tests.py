@@ -11,7 +11,7 @@ import numpy as np
 from sklearn.svm import LinearSVC
 from sklearn.utils.testing import assert_warns_message, clean_warning_registry
 
-from tests.pyspark_test import PySparkTest
+from test.pyspark_test import PySparkTest
 from skspark.model_selection import GridSearchCV, RandomizedSearchCV
 
 
