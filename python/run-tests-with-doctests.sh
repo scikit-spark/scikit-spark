@@ -2,7 +2,6 @@
 # Runs only the doctests. Additional flags are passed through to nose.
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source ${DIR}/env-setup.sh
 
 ALL_MODULES=$(cd $DIR && \
     echo 'import skspark, inspect; \
