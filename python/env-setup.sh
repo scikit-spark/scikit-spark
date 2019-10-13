@@ -12,4 +12,4 @@
 #done
 #
 #export PYTHONPATH=${PYTHONPATH}:${SPARK_HOME}/python:${LIBS}:.
-export PYTHONPATH=${PYTHONPATH}:skspark
+#export PYTHONPATH=${PYTHONPATH}:skspark
