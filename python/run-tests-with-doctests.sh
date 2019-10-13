@@ -3,7 +3,6 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source ${DIR}/env-setup.sh
-export PYTHONPATH=${PYTHONPATH}:${DIR}/test/pyspark_test.py
 
 ALL_MODULES=$(cd $DIR && \
     echo 'import skspark, inspect; \
