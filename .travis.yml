@@ -7,5 +7,5 @@ install:
   - pip install -r requirements.txt
   - pip install -r requirements-tests.txt
 script:
-  - python python/test/basic_travis_spark_test.py
+#  - python python/test/basic_travis_spark_test.py
   - bash python/run-tests-with-doctests.sh
