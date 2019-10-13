@@ -1,0 +1,8 @@
+language: python
+python:
+  - "3.6"
+os: linux
+dist: bionic
+install:
+  - pip install -r requirements.txt
+script: python python/test/basic_travis_spark_test.py
