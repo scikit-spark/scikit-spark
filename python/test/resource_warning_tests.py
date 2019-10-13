@@ -5,14 +5,19 @@ but does throw an unrelated resource warning.
 
 This file has this test whilst swallowing the resource warning.
 """
+import sys
 import warnings
-import numpy as np
 
+import numpy as np
 from sklearn.svm import LinearSVC
 from sklearn.utils.testing import assert_warns_message, clean_warning_registry
 
-from test.pyspark_test import PySparkTest
 from skspark.model_selection import GridSearchCV, RandomizedSearchCV
+
+if sys.version_info[0] > 2:
+    from . pyspark_test import PySparkTest
+else:
+    from pyspark_test import PySparkTest
 
 
 def assert_no_warnings(func, *args, **kw):
