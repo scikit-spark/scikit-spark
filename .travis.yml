@@ -10,7 +10,7 @@ addons:
     packages:
       - openjdk-8-jdk
 env:
-  - JAVA_HOME="$(/usr/libexec/java_home -v 1.8)"
+  - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 install:
   - pip install -r requirements.txt
   - pip install -r requirements-tests.txt
