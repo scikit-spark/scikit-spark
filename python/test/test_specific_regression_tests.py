@@ -1,3 +1,4 @@
+import sys
 from types import GeneratorType
 
 import numpy as np
@@ -8,14 +9,16 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection.tests.common import OneTimeSplitter
 from sklearn.model_selection.tests.test_search import MockClassifier, \
     FailingClassifier
-
 from sklearn.svm import LinearSVC, SVC
 from sklearn.utils.mocking import CheckingClassifier
-from sklearn.utils.testing import assert_no_warnings, assert_warns_message, \
-    assert_true, assert_raise_message, assert_raises, assert_warns
+from sklearn.utils.testing import assert_true, assert_raise_message, assert_raises, assert_warns
 
-from pyspark_test import PySparkTest
 from skspark.model_selection import GridSearchCV, RandomizedSearchCV
+
+if sys.version_info[0] > 2:
+    from . pyspark_test import PySparkTest
+else:
+    from pyspark_test import PySparkTest
 
 
 X = np.array([[-1, -1], [-2, -1], [1, 1], [2, 1]])
