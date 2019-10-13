@@ -17,3 +17,4 @@ install:
   - pip install -e .
 script:
   - bash python/run-tests-with-doctests.sh
+  - pip install scikit-learn==0.20.4 && bash python/run-tests-with-doctests.sh
