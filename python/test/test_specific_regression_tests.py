@@ -25,11 +25,11 @@ X = np.array([[-1, -1], [-2, -1], [1, 1], [2, 1]])
 y = np.array([1, 1, 2, 2])
 
 
-def check_hyperparameter_searcher_with_fit_params(spark, klass, **klass_kwargs):
+def check_hyperparameter_searcher_with_fit_params(klass, **klass_kwargs):
     X = np.arange(100).reshape(10, 10)
     y = np.array([0] * 5 + [1] * 5)
     clf = CheckingClassifier(expected_fit_params=['spam', 'eggs'])
-    searcher = klass(spark, clf, {'foo_param': [1, 2, 3]}, cv=2, **klass_kwargs)
+    searcher = klass(clf, {'foo_param': [1, 2, 3]}, cv=2, **klass_kwargs)
 
     # The CheckingClassifier generates an assertion error if
     # a parameter is missing or has length != len(X).
@@ -49,7 +49,7 @@ class TestSpecificRegressionTests(PySparkTest):
         # Test search over a "grid" with only one point.
         # Non-regression test: grid_scores_ wouldn't be set by GridSearchCV.
         clf = MockClassifier()
-        grid_search = GridSearchCV(self.spark, clf, {'foo_param': [1]})
+        grid_search = GridSearchCV(clf, {'foo_param': [1]})
         grid_search.fit(X, y)
         assert_true(hasattr(grid_search, "cv_results_"))
 
@@ -59,7 +59,7 @@ class TestSpecificRegressionTests(PySparkTest):
 
     def test_random_search_with_fit_params(self):
         check_hyperparameter_searcher_with_fit_params(
-            self.spark, RandomizedSearchCV, n_iter=1)
+            RandomizedSearchCV, n_iter=1)
 
     def test_grid_search_precomputed_kernel_error_nonsquare(self):
         # Test that grid search returns an error with a non-square precomputed
@@ -67,7 +67,7 @@ class TestSpecificRegressionTests(PySparkTest):
         K_train = np.zeros((10, 20))
         y_train = np.ones((10,))
         clf = SVC(kernel='precomputed')
-        cv = GridSearchCV(self.spark, clf, {'C': [0.1, 1.0]})
+        cv = GridSearchCV(clf, {'C': [0.1, 1.0]})
         assert_raises(ValueError, cv.fit, K_train, y_train)
 
     def test_grid_search_cv_splits_consistency(self):
@@ -76,13 +76,13 @@ class TestSpecificRegressionTests(PySparkTest):
         n_splits = 5
         X, y = make_classification(n_samples=n_samples, random_state=0)
 
-        gs = GridSearchCV(self.spark, LinearSVC(random_state=0),
+        gs = GridSearchCV(LinearSVC(random_state=0),
                           param_grid={'C': [0.1, 0.2, 0.3]},
                           cv=OneTimeSplitter(n_splits=n_splits,
                                              n_samples=n_samples))
         gs.fit(X, y)
 
-        gs2 = GridSearchCV(self.spark, LinearSVC(random_state=0),
+        gs2 = GridSearchCV(LinearSVC(random_state=0),
                            param_grid={'C': [0.1, 0.2, 0.3]},
                            cv=KFold(n_splits=n_splits))
         gs2.fit(X, y)
@@ -91,13 +91,13 @@ class TestSpecificRegressionTests(PySparkTest):
         assert_true(isinstance(KFold(n_splits=n_splits,
                                      shuffle=True, random_state=0).split(X, y),
                                GeneratorType))
-        gs3 = GridSearchCV(self.spark, LinearSVC(random_state=0),
+        gs3 = GridSearchCV(LinearSVC(random_state=0),
                            param_grid={'C': [0.1, 0.2, 0.3]},
                            cv=KFold(n_splits=n_splits, shuffle=True,
                                     random_state=0).split(X, y))
         gs3.fit(X, y)
 
-        gs4 = GridSearchCV(self.spark, LinearSVC(random_state=0),
+        gs4 = GridSearchCV(LinearSVC(random_state=0),
                            param_grid={'C': [0.1, 0.2, 0.3]},
                            cv=KFold(n_splits=n_splits, shuffle=True,
                                     random_state=0))
@@ -126,7 +126,7 @@ class TestSpecificRegressionTests(PySparkTest):
                                  if not k.endswith('_time')})
 
         # Check consistency of folds across the parameters
-        gs = GridSearchCV(self.spark, LinearSVC(random_state=0),
+        gs = GridSearchCV(LinearSVC(random_state=0),
                           param_grid={'C': [0.1, 0.1, 0.2, 0.2]},
                           cv=KFold(n_splits=n_splits, shuffle=True))
         gs.fit(X, y)
@@ -161,7 +161,7 @@ class TestSpecificRegressionTests(PySparkTest):
         # refit was done, then an exception would be raised on refit and not
         # caught by grid_search (expected behavior), and this would cause an
         # error in this test.
-        gs = GridSearchCV(self.spark, clf, [{'parameter': [0, 1, 2]}],
+        gs = GridSearchCV(clf, [{'parameter': [0, 1, 2]}],
                           scoring='accuracy', refit=False, error_score=0.0)
 
         assert_warns(FitFailedWarning, gs.fit, X, y)
@@ -173,7 +173,7 @@ class TestSpecificRegressionTests(PySparkTest):
                    if this_point.parameters['parameter'] ==
                    FailingClassifier.FAILING_PARAMETER)
 
-        gs = GridSearchCV(self.spark, clf, [{'parameter': [0, 1, 2]}],
+        gs = GridSearchCV(clf, [{'parameter': [0, 1, 2]}],
                           scoring='accuracy', refit=False,
                           error_score=float('nan'))
         assert_warns(FitFailedWarning, gs.fit, X, y)

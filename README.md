@@ -22,8 +22,10 @@ older versions.
 ## Usage
 
 The functionality here is meant to as closely resemble using Scikit-Learn as 
-possible. The only differences are the import and that the first argument in the
-constructor should be a `SparkSession` as shown below. 
+possible. By default (with `spark=True`) the `SparkSession` is obtained
+internally by calling `SparkSession.builder.getOrCreate()`, so the instantiation
+and calling of the functions is the same (You will preferably have already 
+created a `SparkSession`). 
 
 This example is adapted from the Scikit-Learn documentation. It instantiates
 a local `SparkSession`, and distributes the cross validation folds and 
@@ -47,7 +49,7 @@ spark = SparkSession.builder\
 # How to run grid search
 from skspark.model_selection import GridSearchCV
 
-gs = GridSearchCV(spark, svc, parameters)
+gs = GridSearchCV(svc, parameters)
 gs.fit(iris.data, iris.target)
 
 # How to run random search

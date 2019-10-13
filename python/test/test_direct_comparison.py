@@ -20,7 +20,7 @@ class TestDirectComparison(PySparkTest):
         clf = SklearnGridSearchCV(svr, parameters)
         clf.fit(iris.data, iris.target)
 
-        clf2 = SparkGridSearchCV(self.spark, svr, parameters)
+        clf2 = SparkGridSearchCV(svr, parameters, spark=True)
         clf2.fit(iris.data, iris.target)
 
         b1 = clf.estimator
@@ -35,8 +35,11 @@ class TestDirectComparison(PySparkTest):
         clf = SklearnRandomizedSearchCV(svr, parameters, random_state=4)
         clf.fit(iris.data, iris.target)
 
-        clf2 = SparkRandomizedSearchCV(self.spark, svr, parameters,
-                                       random_state=4)
+        clf2 = SparkRandomizedSearchCV(
+            svr,
+            parameters,
+            random_state=4,
+            spark=self.spark)
         clf2.fit(iris.data, iris.target)
 
         b1 = clf.estimator

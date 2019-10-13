@@ -14,7 +14,7 @@ keywords = [
 
 install_requires = [
     "numpy>=1.13.0",
-    "scikit-learn>=0.19.1",
+    # "scikit-learn>=0.19.1",
     "six==1.11.0"
 ]
 
@@ -23,7 +23,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="scikit-spark",
-    version="0.1.0rc4",
+    version="0.1.0",
     author="Ganesh N. Sivalingam",
     author_email="g.n.sivalingam@gmail.com",
     description=description,

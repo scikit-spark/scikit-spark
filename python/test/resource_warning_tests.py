@@ -48,9 +48,9 @@ class ResourceWarningTests(PySparkTest):
         grid = {'C': [1, 2]}
 
         estimators = [
-            GridSearchCV(self.spark, LinearSVC(random_state=0), grid),
+            GridSearchCV(LinearSVC(random_state=0), grid, spark=True),
             RandomizedSearchCV(
-                self.spark, LinearSVC(random_state=0), grid, n_iter=2)
+                LinearSVC(random_state=0), grid, n_iter=2, spark=True)
         ]
 
         result = {}

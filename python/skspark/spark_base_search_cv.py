@@ -16,6 +16,7 @@ from sklearn.model_selection._search import BaseSearchCV
 from sklearn.utils.deprecation import DeprecationDict
 from sklearn.utils.fixes import MaskedArray
 from scipy.stats import rankdata
+from pyspark.sql import SparkSession
 
 
 class SparkBaseSearchCV(BaseSearchCV):
@@ -28,7 +29,12 @@ class SparkBaseSearchCV(BaseSearchCV):
             estimator, scoring, fit_params, n_jobs, iid, refit, cv, verbose,
             pre_dispatch, error_score, return_train_score)
 
-        self.spark = spark
+        if isinstance(spark, SparkSession):
+            self.spark = spark
+        elif spark:
+            self.spark = SparkSession.builder.getOrCreate()
+        else:
+            self.spark = None
 
         # TODO: I'm not doing whatever pre_dispatch is supposed to do
 
@@ -100,12 +106,11 @@ class SparkBaseSearchCV(BaseSearchCV):
 
         base_estimator = clone(self.estimator)
 
-        method = "spark"
-        if method == "sklearn":
+        if self.spark is None:
             out = self._run_sklearn_fit(base_estimator, X, y, scorers,
                                         fit_params, candidate_params, cv,
                                         groups)
-        elif method == "spark":
+        else:
             out = self._run_skspark_fit(base_estimator, X, y, scorers,
                                         fit_params, candidate_params, cv,
                                         groups)
@@ -300,5 +305,6 @@ class SparkBaseSearchCV(BaseSearchCV):
     def __getstate__(self):
         """To not try to pickle the non-serializable SparkSession"""
         attributes = dict(self.__dict__)
-        del attributes['spark']
+        if 'spark' in attributes.keys():
+            del attributes['spark']
         return attributes
