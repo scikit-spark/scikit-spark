@@ -4,7 +4,7 @@ import sys
 from sklearn import svm, datasets
 from sklearn.utils.testing import assert_true, assert_false
 
-from skspark.model_selection import GridSearchCV
+from skspark.model_selection import GridSearchCV, RandomizedSearchCV
 
 if sys.version_info[0] > 2:
     from . pyspark_test import PySparkTest
@@ -34,8 +34,15 @@ class MiscTests(PySparkTest):
         iris = datasets.load_iris()
         parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
         svc = svm.SVC()
+
         gs = GridSearchCV(estimator=svc, param_grid=parameters, spark=False)
         gs.fit(iris.data, iris.target)
         gs = GridSearchCV(estimator=svc, param_grid=parameters, spark=None)
         gs.fit(iris.data, iris.target)
-        # TODO - add test conditions
+
+        rs = RandomizedSearchCV(estimator=svc, param_distributions=parameters,
+                                spark=False, n_iter=2)
+        rs.fit(iris.data, iris.target)
+        rs = RandomizedSearchCV(estimator=svc, param_distributions=parameters,
+                                spark=None, n_iter=2)
+        rs.fit(iris.data, iris.target)

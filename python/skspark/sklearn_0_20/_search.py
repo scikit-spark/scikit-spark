@@ -9,6 +9,7 @@ import time
 import warnings
 from itertools import product
 
+from pyspark.sql import SparkSession
 from sklearn.base import is_classifier, clone
 from sklearn.externals import six
 from sklearn.metrics.scorer import _check_multimetric_scoring
@@ -20,6 +21,24 @@ from sklearn.utils.validation import indexable
 
 
 class SparkBaseSearchCV(BaseSearchCV):
+
+    def __init__(self, spark, estimator, scoring=None,
+                 fit_params=None, n_jobs=None, iid='warn',
+                 refit=True, cv='warn', verbose=0, pre_dispatch='2*n_jobs',
+                 error_score='raise-deprecating', return_train_score=True):
+
+        super(SparkBaseSearchCV, self).__init__(
+            estimator=estimator, scoring=scoring,
+            fit_params=fit_params, n_jobs=n_jobs, iid=iid,
+            refit=refit, cv=cv, verbose=verbose, pre_dispatch=pre_dispatch,
+            error_score=error_score, return_train_score=return_train_score)
+
+        if isinstance(spark, SparkSession):
+            self.spark = spark
+        elif spark:
+            self.spark = SparkSession.builder.getOrCreate()
+        else:
+            self.spark = None
 
     def fit(self, X, y=None, groups=None, **fit_params):
         """Run fit with all sets of parameters.
@@ -94,7 +113,15 @@ class SparkBaseSearchCV(BaseSearchCV):
                                     verbose=self.verbose)
 
         if self.spark is None:
-            results = self._run_sklearn_fit()
+            fitting_function = self._run_sklearn_fit
+        else:
+            fitting_function = self._run_skspark_fit
+
+        results = fitting_function(
+            base_estimator=base_estimator, X=X, y=y, scorers=scorers, cv=cv,
+            groups=groups, n_splits=n_splits,
+            fit_and_score_kwargs=fit_and_score_kwargs
+        )
 
         # For multi-metric evaluation, store the best_index_, best_params_ and
         # best_score_ iff refit is one of the scorer names
@@ -167,8 +194,72 @@ class SparkBaseSearchCV(BaseSearchCV):
         results = results_container[0]
         return results
 
-    # def _run_skspark_fit(self, base_estimator, X, y, scorers, cv, groups,
-    #                      n_splits, fit_and_score_kwargs):
+    def _run_skspark_fit(self, base_estimator, X, y, scorers, cv, groups,
+                         n_splits, fit_and_score_kwargs):
+        all_candidate_params = []
+        all_out = []
+        results_container = [{}]
+
+        def evaluate_candidates(candidate_params):
+            param_grid = [(parameters, train, test) for parameters, (train, test)
+                          in product(candidate_params, cv.split(X, y, groups))]
+
+            # Because the original python code expects a certain order for the
+            # elements, we need to respect it.
+            indexed_param_grid = list(zip(range(len(param_grid)), param_grid))
+            par_param_grid = self.spark.sparkContext.parallelize(
+                indexed_param_grid, len(indexed_param_grid))
+
+            X_bc = self.spark.sparkContext.broadcast(X)
+            y_bc = self.spark.sparkContext.broadcast(y)
+
+            def spark_task(tup):
+                (index, (parameters, train, test)) = tup
+                local_estimator = clone(base_estimator)
+                local_X = X_bc.value
+                local_y = y_bc.value
+
+                error = None
+                with warnings.catch_warnings(record=True) as warns:
+                    try:
+                        res = _fit_and_score(
+                            local_estimator, X=local_X, y=local_y, train=train,
+                            test=test, parameters=parameters,
+                            **fit_and_score_kwargs)
+                    except Exception as e:
+                        res = None
+                        error = e
+
+                return index, {"results": res, "errors": error, "warnings": warns}
+
+            indexed_out0 = dict(par_param_grid.map(spark_task).collect())
+
+            # process errors and warnings
+            for i in range(len(param_grid)):
+                error_to_be_raised = indexed_out0[i]["errors"]
+                if error_to_be_raised is not None:
+                    raise error_to_be_raised
+
+                for warn in indexed_out0[i]["warnings"]:
+                    warnings.warn(warn.message, warn.category)
+
+            out = [indexed_out0[i]["results"][:-1] for i in range(len(param_grid))]
+
+            X_bc.unpersist()
+            y_bc.unpersist()
+
+            all_out.extend(out)
+            all_candidate_params.extend(candidate_params)
+
+            # XXX: When we drop Python 2 support, we can use nonlocal
+            # instead of results_container
+            results_container[0] = self._format_results(
+                all_candidate_params, scorers, n_splits, all_out)
+            return results_container[0]
+
+        self._run_search(evaluate_candidates)
+        results = results_container[0]
+        return results
 
 
 class GridSearchCV(SparkBaseSearchCV):
