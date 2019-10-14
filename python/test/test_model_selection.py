@@ -92,8 +92,9 @@ def _add_to_module():
     # These tests have been edited and moved into this repo e.g. in
     # resource_warning_tests.py
     refactored_tests = [
-        "test_return_train_score_warn",
-        "test_deprecated_grid_search_iid"
+        "test_return_train_score_warn",  # moved to resource_warning_tests.py
+        "test_deprecated_grid_search_iid",  # moved to resource_warning_tests.py
+        "test_validate_parameter_grid_input"  # not a function, not a test
     ]
 
     for test in all_tests:
