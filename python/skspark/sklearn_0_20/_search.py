@@ -424,20 +424,28 @@ class GridSearchCV(SparkBaseSearchCV):
     Examples
     --------
     >>> from sklearn import svm, datasets
-    >>> from sklearn.model_selection import GridSearchCV
+    >>> from skspark.model_selection import GridSearchCV
+    >>> from pyspark.sql import SparkSession
+    >>>
     >>> iris = datasets.load_iris()
     >>> parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
     >>> svc = svm.SVC(gamma="scale")
+    >>>
+    >>> spark = SparkSession.builder\
+            .master("local[*]")\
+            .appName("skspark-grid-search-doctests")\
+            .getOrCreate()
+    >>>
     >>> clf = GridSearchCV(svc, parameters, cv=5)
     >>> clf.fit(iris.data, iris.target)
     ...                             # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
-    GridSearchCV(cv=5, error_score=...,
+    GridSearchCV(cv=None, error_score=...,
            estimator=SVC(C=1.0, cache_size=..., class_weight=..., coef0=...,
                          decision_function_shape='ovr', degree=..., gamma=...,
                          kernel='rbf', max_iter=-1, probability=False,
                          random_state=None, shrinking=True, tol=...,
                          verbose=False),
-           fit_params=None, iid=..., n_jobs=None,
+           fit_params=None, iid=..., n_jobs=1,
            param_grid=..., pre_dispatch=..., refit=..., return_train_score=...,
            scoring=..., verbose=...)
     >>> sorted(clf.cv_results_.keys())

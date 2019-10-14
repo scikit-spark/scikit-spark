@@ -158,6 +158,7 @@ class GridSearchCV(SparkBaseSearchCV):
             .master("local[*]")\
             .appName("skspark-grid-search-doctests")\
             .getOrCreate()
+    >>>
     >>> clf = GridSearchCV(svc, parameters)
     >>> clf.fit(iris.data, iris.target)
     ...                             # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
