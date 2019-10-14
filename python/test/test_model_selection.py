@@ -91,7 +91,10 @@ def _add_to_module():
 
     # These tests have been edited and moved into this repo e.g. in
     # resource_warning_tests.py
-    refactored_tests = ["test_return_train_score_warn"]
+    refactored_tests = [
+        "test_return_train_score_warn",
+        "test_deprecated_grid_search_iid"
+    ]
 
     for test in all_tests:
         if test.__name__ not in refactored_tests:

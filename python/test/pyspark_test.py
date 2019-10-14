@@ -8,13 +8,13 @@ class PySparkTest(unittest.TestCase):
     Based on this blog post:
     https://blog.cambridgespark.com/unit-testing-with-pyspark-fb31671b1ad8
     """
-    @classmethod
-    def suppress_py4j_logging(cls):
+    @staticmethod
+    def suppress_py4j_logging():
         logger = logging.getLogger("py4j")
         logger.setLevel(logging.WARN)
 
-    @classmethod
-    def create_testing_pyspark_session(cls):
+    @staticmethod
+    def create_testing_pyspark_session():
         return SparkSession.builder\
                 .master("local[*]")\
                 .appName("scikit-spark-tests")\
