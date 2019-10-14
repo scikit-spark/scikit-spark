@@ -16,5 +16,5 @@ install:
   - pip install -r requirements-tests.txt
   - pip install -e .
 script:
-  - bash python/run-tests-with-doctests.sh
-  - pip install scikit-learn==0.20.4 && bash python/run-tests-with-doctests.sh
+  - bash python/run-tests.sh
+  - pip install scikit-learn==0.20.4 && bash python/run-tests.sh
