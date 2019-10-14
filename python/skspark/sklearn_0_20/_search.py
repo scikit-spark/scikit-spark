@@ -243,7 +243,7 @@ class SparkBaseSearchCV(BaseSearchCV):
                 for warn in indexed_out0[i]["warnings"]:
                     warnings.warn(warn.message, warn.category)
 
-            out = [indexed_out0[i]["results"][:-1] for i in range(len(param_grid))]
+            out = [indexed_out0[i]["results"] for i in range(len(param_grid))]
 
             X_bc.unpersist()
             y_bc.unpersist()
