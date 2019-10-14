@@ -3,6 +3,7 @@ from types import GeneratorType
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+import sklearn
 from sklearn.datasets import make_classification
 from sklearn.exceptions import FitFailedWarning
 from sklearn.model_selection import KFold
@@ -149,35 +150,37 @@ class TestSpecificRegressionTests(PySparkTest):
                                       per_param_scores[3])
 
     def test_grid_search_failing_classifier(self):
-        # GridSearchCV with on_error != 'raise'
-        # Ensures that a warning is raised and score reset where appropriate.
+        """The grid_scores_ attribute was removed in 0.20, so the test is only relevant for 0.19"""
+        if sklearn.__version__.startswith("0.19."):
+            # GridSearchCV with on_error != 'raise'
+            # Ensures that a warning is raised and score reset where appropriate.
 
-        X, y = make_classification(n_samples=20, n_features=10, random_state=0)
+            X, y = make_classification(n_samples=20, n_features=10, random_state=0)
 
-        clf = FailingClassifier()
+            clf = FailingClassifier()
 
-        # refit=False because we only want to check that errors caused by fits
-        # to individual folds will be caught and warnings raised instead. If
-        # refit was done, then an exception would be raised on refit and not
-        # caught by grid_search (expected behavior), and this would cause an
-        # error in this test.
-        gs = GridSearchCV(clf, [{'parameter': [0, 1, 2]}],
-                          scoring='accuracy', refit=False, error_score=0.0)
+            # refit=False because we only want to check that errors caused by fits
+            # to individual folds will be caught and warnings raised instead. If
+            # refit was done, then an exception would be raised on refit and not
+            # caught by grid_search (expected behavior), and this would cause an
+            # error in this test.
+            gs = GridSearchCV(clf, [{'parameter': [0, 1, 2]}],
+                              scoring='accuracy', refit=False, error_score=0.0)
 
-        assert_warns(FitFailedWarning, gs.fit, X, y)
+            assert_warns(FitFailedWarning, gs.fit, X, y)
 
-        # Ensure that grid scores were set to zero as required for those fits
-        # that are expected to fail.
-        assert all(np.all(this_point.cv_validation_scores == 0.0)
-                   for this_point in gs.grid_scores_
-                   if this_point.parameters['parameter'] ==
-                   FailingClassifier.FAILING_PARAMETER)
+            # Ensure that grid scores were set to zero as required for those fits
+            # that are expected to fail.
+            assert all(np.all(this_point.cv_validation_scores == 0.0)
+                       for this_point in gs.grid_scores_
+                       if this_point.parameters['parameter'] ==
+                       FailingClassifier.FAILING_PARAMETER)
 
-        gs = GridSearchCV(clf, [{'parameter': [0, 1, 2]}],
-                          scoring='accuracy', refit=False,
-                          error_score=float('nan'))
-        assert_warns(FitFailedWarning, gs.fit, X, y)
-        assert all(np.all(np.isnan(this_point.cv_validation_scores))
-                   for this_point in gs.grid_scores_
-                   if this_point.parameters['parameter'] ==
-                   FailingClassifier.FAILING_PARAMETER)
+            gs = GridSearchCV(clf, [{'parameter': [0, 1, 2]}],
+                              scoring='accuracy', refit=False,
+                              error_score=float('nan'))
+            assert_warns(FitFailedWarning, gs.fit, X, y)
+            assert all(np.all(np.isnan(this_point.cv_validation_scores))
+                       for this_point in gs.grid_scores_
+                       if this_point.parameters['parameter'] ==
+                       FailingClassifier.FAILING_PARAMETER)
