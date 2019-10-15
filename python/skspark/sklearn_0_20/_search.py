@@ -201,6 +201,7 @@ class SparkBaseSearchCV(BaseSearchCV):
         results_container = [{}]
 
         def evaluate_candidates(candidate_params):
+            candidate_params = list(candidate_params)
             param_grid = [(parameters, train, test) for parameters, (train, test)
                           in product(candidate_params, cv.split(X, y, groups))]
 
