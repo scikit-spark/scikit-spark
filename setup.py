@@ -14,7 +14,6 @@ keywords = [
 
 install_requires = [
     "numpy>=1.13.0",
-    # "scikit-learn>=0.19.1",
     "six==1.11.0"
 ]
 

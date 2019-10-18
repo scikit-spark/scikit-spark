@@ -1,7 +1,18 @@
 language: python
-python:
-  - "2.7"
-  - "3.6"
+jobs:
+  include:
+    - name: "Python 2.7 - scikit-learn 0.19"
+      python: "2.7"
+      env: SKLEARN_VERSION="0.19.2"
+    - name: "Python 2.7 - scikit-learn 0.20"
+      python: "2.7"
+      env: SKLEARN_VERSION="0.20.4"
+    - name: "Python 3.6 - scikit-learn 0.19"
+      python: "3.6"
+      env: SKLEARN_VERSION="0.19.2"
+    - name: "Python 3.6 - scikit-learn 0.20"
+      python: "3.6"
+      env: SKLEARN_VERSION="0.20.4"
 os: linux
 dist: bionic
 cache: pip
@@ -17,5 +28,4 @@ install:
   - pip install -r requirements-tests.txt
   - pip install -e .
 script:
-  - bash python/run-tests.sh
-  - pip install scikit-learn==0.20.4 && bash python/run-tests.sh
+  - pip install scikit-learn==$SKLEARN_VERSION && bash python/run-tests.sh
