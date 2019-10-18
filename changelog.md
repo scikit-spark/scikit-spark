@@ -1,4 +1,5 @@
 # 0.2.0
+
 - scikit-learn 0.20 support added
 - Automated testing with travis setup
 
