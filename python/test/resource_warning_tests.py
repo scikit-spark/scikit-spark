@@ -92,6 +92,7 @@ class ResourceWarningTests(PySparkTest):
 
     @skipIf(sklearn_is_0_19(), "0.20 version of test")
     def test_return_train_score_warn(self):
+        from sklearn.utils.testing import ignore_warnings
         # Test that warnings are raised. Will be removed in 0.21
 
         X = np.arange(100).reshape(10, 10)
