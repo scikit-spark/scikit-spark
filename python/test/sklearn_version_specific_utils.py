@@ -1,17 +1,17 @@
 import sklearn
 
 
-def _is_version(version_check: str) -> bool:
+def _is_version(version_check):
     if sklearn.__version__.startswith(version_check):
         return True
     return False
 
 
-def sklearn_is_0_19() -> bool:
+def sklearn_is_0_19():
     return _is_version("0.19.")
 
 
-def sklearn_is_0_20() -> bool:
+def sklearn_is_0_20():
     return _is_version("0.20.")
 
 
