@@ -29,7 +29,7 @@ else:
     from pyspark_test import PySparkTest
 
 
-def assert_no_warnings(func, *args, skip_warning_classes=(ResourceWarning,), **kw):
+def assert_no_warnings(func, *args, **kw):
     # very important to avoid uncontrolled state propagation
     clean_warning_registry()
     with warnings.catch_warnings(record=True) as w:
@@ -41,8 +41,9 @@ def assert_no_warnings(func, *args, skip_warning_classes=(ResourceWarning,), **k
             w = [e for e in w
                  if e.category is not np.VisibleDeprecationWarning]
 
-        # skip ResourceWarning socket warnings (or other specified warnings)
-        w = [e for e in w if e.category not in skip_warning_classes]
+        # skip ResourceWarning socket warnings (Python 3 only)
+        if sys.version_info[0] > 2:
+            w = [e for e in w if e.category != ResourceWarning]
 
         if len(w) > 0:
             raise AssertionError("Got warnings when calling %s: [%s]"
