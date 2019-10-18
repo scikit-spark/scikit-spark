@@ -6,8 +6,10 @@ seems to no longer be under development. It focuses specifically on the
 acceleration of Scikit-Learn's cross validation functionality using PySpark.
 
 ### Improvements over spark-sklearn
-The functionality is based on `sklearn.model_selection` module rather than the 
-deprecated and soon to be removed `sklearn.grid_search`. The new versions 
+`scikit-spark` supports `scikit-learn` versions past 0.19, `spark-sklearn` [have stated that they are probably not going to support newer versions](https://github.com/databricks/spark-sklearn/issues/113).
+
+The functionality in `scikit-spark` is based on `sklearn.model_selection` module rather than the 
+deprecated and soon to be removed `sklearn.grid_search`. The new `model_selection` versions 
 contain several nicer features and `scikit-spark` maintains full compatibility.
 
 ## Installation
@@ -18,6 +20,12 @@ pip install scikit-spark
 
 It has so far only been tested with Spark 2.2.0 and up, but may work with 
 older versions. 
+
+### Supported scikit-learn versions
+- 0.18 untested, likely doesn't work
+- 0.19 supported
+- 0.20 supported
+- 0.21 in progress
 
 ## Usage
 
