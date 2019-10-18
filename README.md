@@ -6,7 +6,8 @@ seems to no longer be under development. It focuses specifically on the
 acceleration of Scikit-Learn's cross validation functionality using PySpark.
 
 ### Improvements over spark-sklearn
-`scikit-spark` supports `scikit-learn` versions past 0.19, `spark-sklearn` [have stated that they are probably not going to support newer versions](https://github.com/databricks/spark-sklearn/issues/113).
+`scikit-spark` supports `scikit-learn` versions past 0.19, `spark-sklearn` [have stated that they are probably not 
+going to support newer versions](https://github.com/databricks/spark-sklearn/issues/113).
 
 The functionality in `scikit-spark` is based on `sklearn.model_selection` module rather than the 
 deprecated and soon to be removed `sklearn.grid_search`. The new `model_selection` versions 
