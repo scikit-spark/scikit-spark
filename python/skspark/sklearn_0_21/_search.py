@@ -5,8 +5,8 @@ from itertools import product
 
 import numpy as np
 from pyspark.sql import SparkSession
-from sklearn._split import check_cv
-from sklearn._validation import _fit_and_score
+from sklearn.model_selection._split import check_cv
+from sklearn.model_selection._validation import _fit_and_score
 from sklearn.base import is_classifier, clone
 from sklearn.metrics.scorer import _check_multimetric_scoring
 from sklearn.model_selection._search import BaseSearchCV, _check_param_grid, ParameterGrid, ParameterSampler
@@ -135,12 +135,11 @@ class SparkBaseSearchCV(BaseSearchCV):
         else:
             fitting_function = self._run_skspark_fit
 
-         results = fitting_function(
-             base_estimator=base_estimator, X=X, y=y, scorers=scorers, cv=cv,
-             groups=groups, n_splits=n_splits,
-             fit_and_score_kwargs=fit_and_score_kwargs
-         )
-
+        results = fitting_function(
+            base_estimator=base_estimator, X=X, y=y, scorers=scorers, cv=cv,
+            groups=groups, n_splits=n_splits,
+            fit_and_score_kwargs=fit_and_score_kwargs
+        )
 
         # For multi-metric evaluation, store the best_index_, best_params_ and
         # best_score_ iff refit is one of the scorer names
@@ -231,6 +230,8 @@ class SparkBaseSearchCV(BaseSearchCV):
 
         def evaluate_candidates(candidate_params):
             candidate_params = list(candidate_params)
+            n_candidates = len(candidate_params)
+
             param_grid = [(parameters, train, test) for parameters, (train, test)
                           in product(candidate_params, cv.split(X, y, groups))]
 
