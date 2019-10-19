@@ -310,6 +310,13 @@ class SparkBaseSearchCV(BaseSearchCV):
                              .format(n_splits,
                                      len(out) // n_candidates))
 
+    def __getstate__(self):
+        """To not try to pickle the non-serializable SparkSession"""
+        attributes = dict(self.__dict__)
+        if 'spark' in attributes.keys():
+            del attributes['spark']
+        return attributes
+
 
 class GridSearchCV(SparkBaseSearchCV):
     """Exhaustive search over specified parameter values for an estimator.
