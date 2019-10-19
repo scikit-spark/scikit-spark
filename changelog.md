@@ -1,3 +1,8 @@
+# 0.3.0
+
+- scikit-learn 0.21 support added
+- scikit-learn 0.21 dropped support for Python 2 and that is mirrored in scikit-spark
+
 # 0.2.0
 
 - scikit-learn 0.20 support added
