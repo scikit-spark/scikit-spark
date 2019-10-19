@@ -233,8 +233,12 @@ class SparkBaseSearchCV(BaseSearchCV):
             candidate_params = list(candidate_params)
             n_candidates = len(candidate_params)
 
-            param_grid = [(parameters, train, test) for parameters, (train, test)
+            param_grid = [(parameters, train, test)
+                          for parameters, (train, test)
                           in product(candidate_params, cv.split(X, y, groups))]
+
+            # empty grids fail during execution, so need to apply check here
+            self._validate_out(param_grid, n_candidates, n_splits)
 
             # Because the original python code expects a certain order for the
             # elements, we need to respect it.
