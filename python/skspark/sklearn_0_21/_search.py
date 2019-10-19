@@ -15,7 +15,8 @@ from sklearn.utils.validation import indexable
 
 
 class SparkBaseSearchCV(BaseSearchCV):
-    """Abstract base class for hyper parameter search with cross-validation.
+    """Abstract base class for spark accelerated hyper parameter search with
+    cross-validation.
     """
 
     @abstractmethod
@@ -306,7 +307,7 @@ class SparkBaseSearchCV(BaseSearchCV):
                                      len(out) // n_candidates))
 
 
-class GridSearchCV(BaseSearchCV):
+class GridSearchCV(SparkBaseSearchCV):
     """Exhaustive search over specified parameter values for an estimator.
 
     Important members are fit, predict.
@@ -629,7 +630,7 @@ class GridSearchCV(BaseSearchCV):
         evaluate_candidates(ParameterGrid(self.param_grid))
 
 
-class RandomizedSearchCV(BaseSearchCV):
+class RandomizedSearchCV(SparkBaseSearchCV):
     """Randomized search on hyper parameters.
 
     RandomizedSearchCV implements a "fit" and a "score" method.
