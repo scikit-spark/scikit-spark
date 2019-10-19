@@ -1,26 +1,12 @@
 language: python
-jobs:
-  include:
-    - name: "Python 2.7 - scikit-learn 0.19"
-      python: "2.7"
-      env:
-        - SKLEARN_VERSION="0.19.2"
-        - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-    - name: "Python 2.7 - scikit-learn 0.20"
-      python: "2.7"
-      env:
-        - SKLEARN_VERSION="0.20.4"
-        - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-    - name: "Python 3.6 - scikit-learn 0.19"
-      python: "3.6"
-      env:
-        - SKLEARN_VERSION="0.19.2"
-        - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-    - name: "Python 3.6 - scikit-learn 0.20"
-      python: "3.6"
-      env:
-        - SKLEARN_VERSION="0.20.4"
-        - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+python:
+  - 2.7
+  - 3.6
+env:
+  - SKLEARN_VERSION="0.19.2" JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  - SKLEARN_VERSION="0.20.4" JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  - SKLEARN_VERSION="0.21.3" JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+
 os: linux
 dist: bionic
 cache: pip
