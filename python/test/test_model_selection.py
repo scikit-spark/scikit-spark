@@ -9,6 +9,8 @@ from sklearn.model_selection import RandomizedSearchCV as \
     SklearnRandomizedSearchCV
 from sklearn.model_selection import GridSearchCV as SklearnGridSearchCV
 
+from test.sklearn_version_specific_utils import get_refactored_tests_to_skip
+
 if sys.version_info[0] > 2:
     from . pyspark_test import PySparkTest
 else:
@@ -91,7 +93,7 @@ def _add_to_module():
 
     # These tests have been edited and moved into this repo e.g. in
     # resource_warning_tests.py
-    refactored_tests = ["test_return_train_score_warn"]
+    refactored_tests = get_refactored_tests_to_skip()
 
     for test in all_tests:
         if test.__name__ not in refactored_tests:

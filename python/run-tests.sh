@@ -6,7 +6,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [[ "$#" = 0 ]]; then
-    ARGS="--nologcapture --all-modules --verbose --with-doctest"
+    ARGS="--nologcapture --all-modules --verbose"
 else
     ARGS="$@"
 fi
