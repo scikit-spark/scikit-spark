@@ -34,7 +34,9 @@ def get_refactored_tests_to_skip():
         ]
     elif sklearn_is_0_21():
         return [
-            "test_refit_callable_out_bound"  # parameterized test, moved to test_parameterised_tests
+            "test_refit_callable_out_bound",  # parameterized test, moved to test_parameterised_tests
+            "test_deprecated_grid_search_iid",  # moved to resource_warning_tests.py
+            "test_validate_parameter_grid_input",  # parameterized test, moved to test_parameterised_tests
         ]
     else:
         raise NotImplementedError(
