@@ -13,7 +13,6 @@ from sklearn.model_selection._validation import _fit_and_score, \
     _aggregate_score_dicts
 from sklearn.utils import indexable
 from sklearn.model_selection._search import BaseSearchCV
-from sklearn.utils.deprecation import DeprecationDict
 from sklearn.utils.fixes import MaskedArray
 from scipy.stats import rankdata
 from pyspark.sql import SparkSession
@@ -130,6 +129,7 @@ class SparkBaseSearchCV(BaseSearchCV):
             train_scores = _aggregate_score_dicts(train_score_dicts)
 
         # TODO: replace by a dict in 0.21
+        from sklearn.utils.deprecation import DeprecationDict
         results = (DeprecationDict() if self.return_train_score == 'warn'
                    else {})
 
