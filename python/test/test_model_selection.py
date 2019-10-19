@@ -36,39 +36,6 @@ class AllTests(PySparkTest):
         del sklearn.model_selection.RandomizedSearchCV_original
 
 
-class GridSearchCV(SparkGridSearchCV):
-    """
-    Wrapper to make the scikit-spark version of GridSearchCV seem like
-    the scikit-learn version. This allows it to be used in the
-    existing scikit-learn tests.
-    """
-    def __init__(self, estimator, param_grid, scoring=None, fit_params=None,
-                 n_jobs=1, iid='warn', refit=True, cv=None, verbose=0,
-                 pre_dispatch='2*n_jobs', error_score='raise',
-                 return_train_score="warn"):
-        super(GridSearchCV, self).__init__(
-            estimator, param_grid, scoring, fit_params, n_jobs,
-            iid, refit, cv, verbose, pre_dispatch, error_score,
-            return_train_score, spark=True)
-
-
-class RandomizedSearchCV(SparkRandomizedSearchCV):
-    """
-    Wrapper to make the scikit-spark version of RandomizedSearchCV seem like
-    the scikit-learn version. This allows it to be used in the
-    existing scikit-learn tests.
-    """
-    def __init__(self, estimator, param_distributions, n_iter=10,
-                 scoring=None, fit_params=None, n_jobs=1, iid='warn',
-                 refit=True, cv=None, verbose=0, pre_dispatch='2*n_jobs',
-                 random_state=None, error_score='raise',
-                 return_train_score="warn"):
-        super(RandomizedSearchCV, self).__init__(
-            estimator, param_distributions, n_iter, scoring,
-            fit_params, n_jobs, iid, refit, cv, verbose, pre_dispatch,
-            random_state, error_score, return_train_score, spark=True)
-
-
 def _create_method(method):
     def do_test_expected(*kwargs):
         method()
@@ -77,10 +44,10 @@ def _create_method(method):
 
 
 def _add_to_module():
-    sklearn.model_selection.GridSearchCV = GridSearchCV
+    sklearn.model_selection.GridSearchCV = SparkGridSearchCV
     sklearn.model_selection.GridSearchCV_original = SklearnGridSearchCV
 
-    sklearn.model_selection.RandomizedSearchCV = RandomizedSearchCV
+    sklearn.model_selection.RandomizedSearchCV = SparkRandomizedSearchCV
     sklearn.model_selection.RandomizedSearchCV_original = \
         SklearnRandomizedSearchCV
 
