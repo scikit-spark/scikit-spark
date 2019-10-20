@@ -21,7 +21,7 @@ from sklearn.utils.testing import assert_warns_message
 from sklearn.utils.testing import clean_warning_registry
 
 from skspark.model_selection import GridSearchCV, RandomizedSearchCV
-from test.sklearn_version_specific_utils import sklearn_is_0_19
+from test.sklearn_version_specific_utils import sklearn_is_0_19, sklearn_is_0_21
 
 if sys.version_info[0] > 2:
     from . pyspark_test import PySparkTest
@@ -91,7 +91,7 @@ class ResourceWarningTests(PySparkTest):
             if key not in train_keys:
                 assert_no_warnings(result['warn'].get, key)
 
-    @skipIf(sklearn_is_0_19(), "0.20 version of test")
+    @skipIf(sklearn_is_0_19() or sklearn_is_0_21(), "0.20 version of test")
     def test_return_train_score_warn(self):
         from sklearn.utils.testing import ignore_warnings
         # Test that warnings are raised. Will be removed in 0.21

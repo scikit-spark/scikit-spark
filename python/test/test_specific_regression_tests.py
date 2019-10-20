@@ -1,5 +1,6 @@
 import sys
 from types import GeneratorType
+from unittest import skipIf
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
@@ -15,6 +16,7 @@ from sklearn.utils.mocking import CheckingClassifier
 from sklearn.utils.testing import assert_true, assert_raise_message, assert_raises, assert_warns
 
 from skspark.model_selection import GridSearchCV, RandomizedSearchCV
+from test.sklearn_version_specific_utils import sklearn_is_0_21
 
 if sys.version_info[0] > 2:
     from . pyspark_test import PySparkTest
@@ -71,6 +73,7 @@ class TestSpecificRegressionTests(PySparkTest):
         cv = GridSearchCV(clf, {'C': [0.1, 1.0]})
         assert_raises(ValueError, cv.fit, K_train, y_train)
 
+    @skipIf(sklearn_is_0_21(), "test not relevant to sklearn 0.21")
     def test_grid_search_cv_splits_consistency(self):
         # Check if a one time iterable is accepted as a cv parameter.
         n_samples = 100

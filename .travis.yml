@@ -1,26 +1,15 @@
 language: python
+python:
+  - 2.7
+  - 3.6
+env:
+  - SKLEARN_VERSION="0.19.2"
+  - SKLEARN_VERSION="0.20.4"
+  - SKLEARN_VERSION="0.21.3"
 jobs:
-  include:
-    - name: "Python 2.7 - scikit-learn 0.19"
-      python: "2.7"
-      env:
-        - SKLEARN_VERSION="0.19.2"
-        - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-    - name: "Python 2.7 - scikit-learn 0.20"
-      python: "2.7"
-      env:
-        - SKLEARN_VERSION="0.20.4"
-        - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-    - name: "Python 3.6 - scikit-learn 0.19"
-      python: "3.6"
-      env:
-        - SKLEARN_VERSION="0.19.2"
-        - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-    - name: "Python 3.6 - scikit-learn 0.20"
-      python: "3.6"
-      env:
-        - SKLEARN_VERSION="0.20.4"
-        - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  exclude:
+    - python: 2.7
+      env: SKLEARN_VERSION="0.21.3"
 os: linux
 dist: bionic
 cache: pip
@@ -34,4 +23,6 @@ install:
   - pip install -r requirements-tests.txt
   - pip install -e .
 script:
-  - pip install scikit-learn==$SKLEARN_VERSION && bash python/run-tests.sh
+  - export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  - pip install scikit-learn==$SKLEARN_VERSION
+  - bash python/run-tests.sh
