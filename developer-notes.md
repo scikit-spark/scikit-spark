@@ -2,6 +2,10 @@
 
 ## How to add support for a new version
 
+### Updating code
+Normally you need to copy the `_search.py` file from `sklearn`. In there you need to set up the `RandomizedSearchCV` and `GridSearchCV` classes to accept the `spark` argument. 
+SparkBaseSearchCV should also be created, and that needs to implement `fit()`.
+
 ### Updating version numbers
 - Set the new scikit-spark version number in 
     - `setup.py`
