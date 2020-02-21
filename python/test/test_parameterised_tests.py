@@ -3,7 +3,8 @@ from unittest import skipIf
 
 import pytest
 from sklearn.datasets import make_classification
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, ParameterGrid, ParameterSampler
+from sklearn.model_selection import ParameterGrid, ParameterSampler
+from skspark.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.svm import LinearSVC
 
 from test.pyspark_test import PySparkTest
