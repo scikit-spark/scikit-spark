@@ -6,10 +6,13 @@ env:
   - SKLEARN_VERSION="0.19.2"
   - SKLEARN_VERSION="0.20.4"
   - SKLEARN_VERSION="0.21.3"
+  - SKLEARN_VERSION="0.22.1"
 jobs:
   exclude:
     - python: 2.7
       env: SKLEARN_VERSION="0.21.3"
+    - python: 2.7
+        env: SKLEARN_VERSION="0.22.1"
 os: linux
 dist: bionic
 cache: pip
