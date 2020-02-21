@@ -6,11 +6,11 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, ParameterG
 from sklearn.svm import LinearSVC
 
 from test.pyspark_test import PySparkTest
-from test.sklearn_version_specific_utils import sklearn_is_0_21
+from test.sklearn_version_specific_utils import sklearn_is_at_least
 
 
 class TestSpecificRegressionTests(PySparkTest):
-    @skipIf(not sklearn_is_0_21(), "test only for sklearn 0.21")
+    @skipIf(not sklearn_is_at_least("0.21"), "test for sklearn 0.21 and above")
     def test_refit_callable_out_bound(self):
         """
         Test implementation catches the errors when 'best_index_' returns an
@@ -34,7 +34,7 @@ class TestSpecificRegressionTests(PySparkTest):
             with pytest.raises(IndexError, match='best_index_ index out of range'):
                 clf.fit(X, y)
 
-    @skipIf(not sklearn_is_0_21(), "test only for sklearn 0.21")
+    @skipIf(not sklearn_is_at_least("0.21"), "test for sklearn 0.21 and above")
     def test_validate_parameter_grid_input_wrapper(self):
         def test_validate_parameter_grid_input(input, error_type, error_message):
             with pytest.raises(error_type, match=error_message):

@@ -23,6 +23,12 @@ def sklearn_is_0_22():
     return _is_version("0.22.")
 
 
+def sklearn_is_at_least(version):
+    if sklearn.__version__ >= version:
+        return True
+    return False
+
+
 def get_refactored_tests_to_skip():
     """These tests have been edited in order to work with spark.
     They have been moved into this repo e.g. in resource_warning_tests.py"""
