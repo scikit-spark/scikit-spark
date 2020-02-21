@@ -1,43 +1,20 @@
-"""
-The :mod:`sklearn.model_selection._search` includes utilities to fine-tune the
-parameters of an estimator.
-"""
-
-# Author: Alexandre Gramfort <alexandre.gramfort@inria.fr>,
-#         Gael Varoquaux <gael.varoquaux@normalesup.org>
-#         Andreas Mueller <amueller@ais.uni-bonn.de>
-#         Olivier Grisel <olivier.grisel@ensta.org>
-#         Raghav RV <rvraghav93@gmail.com>
-# License: BSD 3 clause
-
-from abc import ABCMeta, abstractmethod
-from collections import defaultdict
-from collections.abc import Mapping, Sequence, Iterable
-from functools import partial, reduce
-from itertools import product
 import numbers
-import operator
 import time
 import warnings
+from abc import abstractmethod
+from collections import defaultdict
+from functools import partial
 
 import numpy as np
-from scipy.stats import rankdata
 from pyspark.sql import SparkSession
-from sklearn.base import BaseEstimator, is_classifier, clone
-from sklearn.base import MetaEstimatorMixin
+from scipy.stats import rankdata
+from sklearn.base import is_classifier, clone
+from sklearn.metrics._scorer import _check_multimetric_scoring
 from sklearn.model_selection._search import BaseSearchCV, _check_param_grid, ParameterGrid, ParameterSampler
 from sklearn.model_selection._split import check_cv
-from sklearn.model_selection._validation import _fit_and_score
 from sklearn.model_selection._validation import _aggregate_score_dicts
-from sklearn.exceptions import NotFittedError
-from joblib import Parallel, delayed
-from sklearn.utils import check_random_state
 from sklearn.utils.fixes import MaskedArray
-from sklearn.utils.random import sample_without_replacement
-from sklearn.utils.validation import indexable, check_is_fitted, _check_fit_params
-from sklearn.utils.metaestimators import if_delegate_has_method
-from sklearn.metrics._scorer import _check_multimetric_scoring
-from sklearn.metrics import check_scoring
+from sklearn.utils.validation import indexable, _check_fit_params
 
 from skspark.sklearn_0_21._search import SparkBaseSearchCV as SparkBaseSearchCV_0_21
 
