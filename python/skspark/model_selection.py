@@ -17,5 +17,6 @@ elif sklearn.__version__.startswith("0.21."):
     from skspark.sklearn_0_21._search import GridSearchCV, RandomizedSearchCV
 elif sklearn.__version__.startswith("0.22."):
     _assert_above_python_2()
+    from skspark.sklearn_0_22._search import GridSearchCV, RandomizedSearchCV
 else:
     raise NotImplementedError("sklearn versions above 0.22 are not yet supported")
