@@ -25,6 +25,7 @@ from scipy.stats import rankdata
 
 from sklearn.base import BaseEstimator, is_classifier, clone
 from sklearn.base import MetaEstimatorMixin
+from sklearn.model_selection._search import BaseSearchCV
 from sklearn.model_selection._split import check_cv
 from sklearn.model_selection._validation import _fit_and_score
 from sklearn.model_selection._validation import _aggregate_score_dicts
@@ -38,219 +39,25 @@ from sklearn.utils.metaestimators import if_delegate_has_method
 from sklearn.metrics._scorer import _check_multimetric_scoring
 from sklearn.metrics import check_scoring
 
+from skspark.sklearn_0_21._search import SparkBaseSearchCV as SparkBaseSearchCV_0_21
 
 __all__ = ['GridSearchCV', 'RandomizedSearchCV']
 
 
-class BaseSearchCV(MetaEstimatorMixin, BaseEstimator, metaclass=ABCMeta):
-    """Abstract base class for hyper parameter search with cross-validation.
+class SparkBaseSearchCV(SparkBaseSearchCV_0_21, BaseSearchCV):
+    """Abstract base class for spark accelerated hyper parameter search with
+    cross-validation.
     """
-
     @abstractmethod
     def __init__(self, estimator, scoring=None, n_jobs=None, iid='deprecated',
                  refit=True, cv=None, verbose=0, pre_dispatch='2*n_jobs',
                  error_score=np.nan, return_train_score=True):
 
-        self.scoring = scoring
-        self.estimator = estimator
-        self.n_jobs = n_jobs
-        self.iid = iid
-        self.refit = refit
-        self.cv = cv
-        self.verbose = verbose
-        self.pre_dispatch = pre_dispatch
-        self.error_score = error_score
-        self.return_train_score = return_train_score
-
-    @property
-    def _estimator_type(self):
-        return self.estimator._estimator_type
-
-    @property
-    def _pairwise(self):
-        # allows cross-validation to see 'precomputed' metrics
-        return getattr(self.estimator, '_pairwise', False)
-
-    def score(self, X, y=None):
-        """Returns the score on the given data, if the estimator has been refit.
-
-        This uses the score defined by ``scoring`` where provided, and the
-        ``best_estimator_.score`` method otherwise.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Input data, where n_samples is the number of samples and
-            n_features is the number of features.
-
-        y : array-like of shape (n_samples, n_output) or (n_samples,), optional
-            Target relative to X for classification or regression;
-            None for unsupervised learning.
-
-        Returns
-        -------
-        score : float
-        """
-        self._check_is_fitted('score')
-        if self.scorer_ is None:
-            raise ValueError("No score function explicitly defined, "
-                             "and the estimator doesn't provide one %s"
-                             % self.best_estimator_)
-        score = self.scorer_[self.refit] if self.multimetric_ else self.scorer_
-        return score(self.best_estimator_, X, y)
-
-    def _check_is_fitted(self, method_name):
-        if not self.refit:
-            raise NotFittedError('This %s instance was initialized '
-                                 'with refit=False. %s is '
-                                 'available only after refitting on the best '
-                                 'parameters. You can refit an estimator '
-                                 'manually using the ``best_params_`` '
-                                 'attribute'
-                                 % (type(self).__name__, method_name))
-        else:
-            check_is_fitted(self)
-
-    @if_delegate_has_method(delegate=('best_estimator_', 'estimator'))
-    def predict(self, X):
-        """Call predict on the estimator with the best found parameters.
-
-        Only available if ``refit=True`` and the underlying estimator supports
-        ``predict``.
-
-        Parameters
-        ----------
-        X : indexable, length n_samples
-            Must fulfill the input assumptions of the
-            underlying estimator.
-
-        """
-        self._check_is_fitted('predict')
-        return self.best_estimator_.predict(X)
-
-    @if_delegate_has_method(delegate=('best_estimator_', 'estimator'))
-    def predict_proba(self, X):
-        """Call predict_proba on the estimator with the best found parameters.
-
-        Only available if ``refit=True`` and the underlying estimator supports
-        ``predict_proba``.
-
-        Parameters
-        ----------
-        X : indexable, length n_samples
-            Must fulfill the input assumptions of the
-            underlying estimator.
-
-        """
-        self._check_is_fitted('predict_proba')
-        return self.best_estimator_.predict_proba(X)
-
-    @if_delegate_has_method(delegate=('best_estimator_', 'estimator'))
-    def predict_log_proba(self, X):
-        """Call predict_log_proba on the estimator with the best found parameters.
-
-        Only available if ``refit=True`` and the underlying estimator supports
-        ``predict_log_proba``.
-
-        Parameters
-        ----------
-        X : indexable, length n_samples
-            Must fulfill the input assumptions of the
-            underlying estimator.
-
-        """
-        self._check_is_fitted('predict_log_proba')
-        return self.best_estimator_.predict_log_proba(X)
-
-    @if_delegate_has_method(delegate=('best_estimator_', 'estimator'))
-    def decision_function(self, X):
-        """Call decision_function on the estimator with the best found parameters.
-
-        Only available if ``refit=True`` and the underlying estimator supports
-        ``decision_function``.
-
-        Parameters
-        ----------
-        X : indexable, length n_samples
-            Must fulfill the input assumptions of the
-            underlying estimator.
-
-        """
-        self._check_is_fitted('decision_function')
-        return self.best_estimator_.decision_function(X)
-
-    @if_delegate_has_method(delegate=('best_estimator_', 'estimator'))
-    def transform(self, X):
-        """Call transform on the estimator with the best found parameters.
-
-        Only available if the underlying estimator supports ``transform`` and
-        ``refit=True``.
-
-        Parameters
-        ----------
-        X : indexable, length n_samples
-            Must fulfill the input assumptions of the
-            underlying estimator.
-
-        """
-        self._check_is_fitted('transform')
-        return self.best_estimator_.transform(X)
-
-    @if_delegate_has_method(delegate=('best_estimator_', 'estimator'))
-    def inverse_transform(self, Xt):
-        """Call inverse_transform on the estimator with the best found params.
-
-        Only available if the underlying estimator implements
-        ``inverse_transform`` and ``refit=True``.
-
-        Parameters
-        ----------
-        Xt : indexable, length n_samples
-            Must fulfill the input assumptions of the
-            underlying estimator.
-
-        """
-        self._check_is_fitted('inverse_transform')
-        return self.best_estimator_.inverse_transform(Xt)
-
-    @property
-    def classes_(self):
-        self._check_is_fitted("classes_")
-        return self.best_estimator_.classes_
-
-    def _run_search(self, evaluate_candidates):
-        """Repeatedly calls `evaluate_candidates` to conduct a search.
-
-        This method, implemented in sub-classes, makes it possible to
-        customize the the scheduling of evaluations: GridSearchCV and
-        RandomizedSearchCV schedule evaluations for their whole parameter
-        search space at once but other more sequential approaches are also
-        possible: for instance is possible to iteratively schedule evaluations
-        for new regions of the parameter search space based on previously
-        collected evaluation results. This makes it possible to implement
-        Bayesian optimization or more generally sequential model-based
-        optimization by deriving from the BaseSearchCV abstract base class.
-
-        Parameters
-        ----------
-        evaluate_candidates : callable
-            This callback accepts a list of candidates, where each candidate is
-            a dict of parameter settings. It returns a dict of all results so
-            far, formatted like ``cv_results_``.
-
-        Examples
-        --------
-
-        ::
-
-            def _run_search(self, evaluate_candidates):
-                'Try C=0.1 only if C=1 is better than C=10'
-                all_results = evaluate_candidates([{'C': 1}, {'C': 10}])
-                score = all_results['mean_test_score']
-                if score[0] < score[1]:
-                    evaluate_candidates([{'C': 0.1}])
-        """
-        raise NotImplementedError("_run_search not implemented.")
+        super(SparkBaseSearchCV, self).__init__(
+            estimator=estimator, scoring=scoring, n_jobs=n_jobs, iid=iid,
+            refit=refit, cv=cv, verbose=verbose, pre_dispatch=pre_dispatch,
+            error_score=error_score, return_train_score=return_train_score
+        )
 
     def fit(self, X, y=None, groups=None, **fit_params):
         """Run fit with all sets of parameters.
@@ -306,8 +113,9 @@ class BaseSearchCV(MetaEstimatorMixin, BaseEstimator, metaclass=ABCMeta):
 
         base_estimator = clone(self.estimator)
 
-        parallel = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
-                            pre_dispatch=self.pre_dispatch)
+        # handled in fit functions below
+        # parallel = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
+        #                     pre_dispatch=self.pre_dispatch)
 
         fit_and_score_kwargs = dict(scorer=scorers,
                                     fit_params=fit_params,
@@ -317,49 +125,19 @@ class BaseSearchCV(MetaEstimatorMixin, BaseEstimator, metaclass=ABCMeta):
                                     return_parameters=False,
                                     error_score=self.error_score,
                                     verbose=self.verbose)
-        results = {}
-        with parallel:
-            all_candidate_params = []
-            all_out = []
 
-            def evaluate_candidates(candidate_params):
-                candidate_params = list(candidate_params)
-                n_candidates = len(candidate_params)
+        # sklearn code above
+        if self.spark is None:
+            fitting_function = self._run_sklearn_fit
+        else:
+            fitting_function = self._run_skspark_fit
 
-                if self.verbose > 0:
-                    print("Fitting {0} folds for each of {1} candidates,"
-                          " totalling {2} fits".format(
-                              n_splits, n_candidates, n_candidates * n_splits))
-
-                out = parallel(delayed(_fit_and_score)(clone(base_estimator),
-                                                       X, y,
-                                                       train=train, test=test,
-                                                       parameters=parameters,
-                                                       **fit_and_score_kwargs)
-                               for parameters, (train, test)
-                               in product(candidate_params,
-                                          cv.split(X, y, groups)))
-
-                if len(out) < 1:
-                    raise ValueError('No fits were performed. '
-                                     'Was the CV iterator empty? '
-                                     'Were there no candidates?')
-                elif len(out) != n_candidates * n_splits:
-                    raise ValueError('cv.split and cv.get_n_splits returned '
-                                     'inconsistent results. Expected {} '
-                                     'splits, got {}'
-                                     .format(n_splits,
-                                             len(out) // n_candidates))
-
-                all_candidate_params.extend(candidate_params)
-                all_out.extend(out)
-
-                nonlocal results
-                results = self._format_results(
-                    all_candidate_params, scorers, n_splits, all_out)
-                return results
-
-            self._run_search(evaluate_candidates)
+        results = fitting_function(
+            base_estimator=base_estimator, X=X, y=y, scorers=scorers, cv=cv,
+            groups=groups, n_splits=n_splits,
+            fit_and_score_kwargs=fit_and_score_kwargs
+        )
+        # sklearn code below
 
         # For multi-metric evaluation, store the best_index_, best_params_ and
         # best_score_ iff refit is one of the scorer names
