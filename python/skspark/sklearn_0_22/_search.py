@@ -24,7 +24,8 @@ class SparkBaseSearchCV(SparkBaseSearchCV_0_21, BaseSearchCV):
                  refit=True, cv=None, verbose=0, pre_dispatch='2*n_jobs',
                  error_score=np.nan, return_train_score=True):
 
-        super(SparkBaseSearchCV, self).__init__(
+        BaseSearchCV.__init__(
+            self,
             estimator=estimator, scoring=scoring, n_jobs=n_jobs, iid=iid,
             refit=refit, cv=cv, verbose=verbose, pre_dispatch=pre_dispatch,
             error_score=error_score, return_train_score=return_train_score
