@@ -52,16 +52,26 @@ class TestParameterisedTests(PySparkTest):
 
     @skipIf(not sklearn_is_at_least("0.22"), "test for sklearn 0.22 and above")
     def test_validate_parameter_input_wrapper(self):
+        from sklearn.model_selection.tests.test_search import test_validate_parameter_input
+
         parameters = [
             (0, TypeError, r'Parameter .* is not a dict or a list \(0\)'),
             ([{'foo': [0]}, 0], TypeError, r'Parameter .* is not a dict \(0\)'),
             ({'foo': 0}, TypeError, "Parameter.* value is not iterable .*" r"\(key='foo', value=0\)")
         ]
 
-        def test_validate_parameter_input(klass, input, error_type, error_message):
-            with pytest.raises(error_type, match=error_message):
-                klass(input)
-
         for klass in [ParameterGrid, partial(ParameterSampler, n_iter=10)]:
             for input, error_type, error_message in parameters:
                 test_validate_parameter_input(klass, input, error_type, error_message)
+
+    @skipIf(not sklearn_is_at_least("0.22"), "test for sklearn 0.22 and above")
+    def test_search_default_iid_wrapper(self):
+        from sklearn.model_selection.tests.test_search import test_search_default_iid
+
+        parameters = [
+            (GridSearchCV, {'param_grid': {'C': [1, 10]}}),
+            (RandomizedSearchCV, {'param_distributions': {'C': [1, 10]}, 'n_iter': 2})
+        ]
+
+        for SearchCV, specialized_params in parameters:
+            test_search_default_iid(SearchCV, specialized_params)
