@@ -75,3 +75,10 @@ class TestParameterisedTests(PySparkTest):
 
         for SearchCV, specialized_params in parameters:
             test_search_default_iid(SearchCV, specialized_params)
+
+    @skipIf(not sklearn_is_at_least("0.22"), "test for sklearn 0.22 and above")
+    def test_SearchCV_with_fit_params_wrapper(self):
+        from sklearn.model_selection.tests.test_search import test_SearchCV_with_fit_params
+
+        for SearchCV in [GridSearchCV, RandomizedSearchCV]:
+            test_SearchCV_with_fit_params(SearchCV)
