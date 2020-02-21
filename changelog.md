@@ -1,3 +1,6 @@
+# 0.4.0
+- scikit-learn 0.22 support added
+
 # 0.3.0
 
 - scikit-learn 0.21 support added
