@@ -22,10 +22,10 @@ import warnings
 
 import numpy as np
 from scipy.stats import rankdata
-
+from pyspark.sql import SparkSession
 from sklearn.base import BaseEstimator, is_classifier, clone
 from sklearn.base import MetaEstimatorMixin
-from sklearn.model_selection._search import BaseSearchCV
+from sklearn.model_selection._search import BaseSearchCV, _check_param_grid, ParameterGrid, ParameterSampler
 from sklearn.model_selection._split import check_cv
 from sklearn.model_selection._validation import _fit_and_score
 from sklearn.model_selection._validation import _aggregate_score_dicts
@@ -49,7 +49,7 @@ class SparkBaseSearchCV(SparkBaseSearchCV_0_21, BaseSearchCV):
     cross-validation.
     """
     @abstractmethod
-    def __init__(self, estimator, scoring=None, n_jobs=None, iid='deprecated',
+    def __init__(self, spark, estimator, scoring=None, n_jobs=None, iid='deprecated',
                  refit=True, cv=None, verbose=0, pre_dispatch='2*n_jobs',
                  error_score=np.nan, return_train_score=True):
 
@@ -58,6 +58,13 @@ class SparkBaseSearchCV(SparkBaseSearchCV_0_21, BaseSearchCV):
             refit=refit, cv=cv, verbose=verbose, pre_dispatch=pre_dispatch,
             error_score=error_score, return_train_score=return_train_score
         )
+
+        if isinstance(spark, SparkSession):
+            self.spark = spark
+        elif spark:
+            self.spark = SparkSession.builder.getOrCreate()
+        else:
+            self.spark = None
 
     def fit(self, X, y=None, groups=None, **fit_params):
         """Run fit with all sets of parameters.
@@ -268,7 +275,7 @@ class SparkBaseSearchCV(SparkBaseSearchCV_0_21, BaseSearchCV):
         return results
 
 
-class GridSearchCV(BaseSearchCV):
+class GridSearchCV(SparkBaseSearchCV):
     """Exhaustive search over specified parameter values for an estimator.
 
     Important members are fit, predict.
@@ -567,9 +574,10 @@ class GridSearchCV(BaseSearchCV):
     def __init__(self, estimator, param_grid, scoring=None,
                  n_jobs=None, iid='deprecated', refit=True, cv=None,
                  verbose=0, pre_dispatch='2*n_jobs',
-                 error_score=np.nan, return_train_score=False):
+                 error_score=np.nan, return_train_score=False,
+                 spark=True):
         super().__init__(
-            estimator=estimator, scoring=scoring,
+            spark=spark,estimator=estimator, scoring=scoring,
             n_jobs=n_jobs, iid=iid, refit=refit, cv=cv, verbose=verbose,
             pre_dispatch=pre_dispatch, error_score=error_score,
             return_train_score=return_train_score)
@@ -581,7 +589,7 @@ class GridSearchCV(BaseSearchCV):
         evaluate_candidates(ParameterGrid(self.param_grid))
 
 
-class RandomizedSearchCV(BaseSearchCV):
+class RandomizedSearchCV(SparkBaseSearchCV):
     """Randomized search on hyper parameters.
 
     RandomizedSearchCV implements a "fit" and a "score" method.
@@ -897,12 +905,12 @@ class RandomizedSearchCV(BaseSearchCV):
                  n_jobs=None, iid='deprecated', refit=True,
                  cv=None, verbose=0, pre_dispatch='2*n_jobs',
                  random_state=None, error_score=np.nan,
-                 return_train_score=False):
+                 return_train_score=False, spark=True):
         self.param_distributions = param_distributions
         self.n_iter = n_iter
         self.random_state = random_state
         super().__init__(
-            estimator=estimator, scoring=scoring,
+            spark=spark, estimator=estimator, scoring=scoring,
             n_jobs=n_jobs, iid=iid, refit=refit, cv=cv, verbose=verbose,
             pre_dispatch=pre_dispatch, error_score=error_score,
             return_train_score=return_train_score)
