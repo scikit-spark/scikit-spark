@@ -1,15 +1,16 @@
+from functools import partial
 from unittest import skipIf
 
 import pytest
 from sklearn.datasets import make_classification
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, ParameterGrid
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, ParameterGrid, ParameterSampler
 from sklearn.svm import LinearSVC
 
 from test.pyspark_test import PySparkTest
 from test.sklearn_version_specific_utils import sklearn_is_at_least
 
 
-class TestSpecificRegressionTests(PySparkTest):
+class TestParameterisedTests(PySparkTest):
     @skipIf(not sklearn_is_at_least("0.21"), "test for sklearn 0.21 and above")
     def test_refit_callable_out_bound(self):
         """
@@ -48,3 +49,19 @@ class TestSpecificRegressionTests(PySparkTest):
         ]
         for input, error_type, error_message in parameters:
             test_validate_parameter_grid_input(input, error_type, error_message)
+
+    @skipIf(not sklearn_is_at_least("0.22"), "test for sklearn 0.22 and above")
+    def test_validate_parameter_input_wrapper(self):
+        parameters = [
+            (0, TypeError, r'Parameter .* is not a dict or a list \(0\)'),
+            ([{'foo': [0]}, 0], TypeError, r'Parameter .* is not a dict \(0\)'),
+            ({'foo': 0}, TypeError, "Parameter.* value is not iterable .*" r"\(key='foo', value=0\)")
+        ]
+
+        def test_validate_parameter_input(klass, input, error_type, error_message):
+            with pytest.raises(error_type, match=error_message):
+                klass(input)
+
+        for klass in [ParameterGrid, partial(ParameterSampler, n_iter=10)]:
+            for input, error_type, error_message in parameters:
+                test_validate_parameter_input(klass, input, error_type, error_message)

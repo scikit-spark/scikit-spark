@@ -53,6 +53,11 @@ def get_refactored_tests_to_skip():
             "test_refit_callable_out_bound",  # parameterized test, moved to test_parameterised_tests
             "test_deprecated_grid_search_iid",  # moved to resource_warning_tests.py
             "test_validate_parameter_grid_input",  # parameterized test, moved to test_parameterised_tests
+            "test_SearchCV_with_fit_params",  # TODO - move to test_parameterised_tests
+            "test_scalar_fit_param",  # TODO - move to test_parameterised_tests
+            "test_scalar_fit_param_compat",  # TODO - move to test_parameterised_tests
+            "test_search_default_iid",  # TODO - move to test_parameterised_tests
+            "test_validate_parameter_input",  # moved to test_parameterised_tests
         ]
     else:
         raise NotImplementedError(
