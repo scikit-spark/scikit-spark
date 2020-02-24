@@ -7,15 +7,13 @@ def _is_version(version_check):
     return False
 
 
+def sklearn_version_is(version):
+    if sklearn.__version__.startswith(version):
+        return True
+    return False
+
+
 # TODO just have single function sklearn_is(<version>)
-def sklearn_is_0_19():
-    return _is_version("0.19.")
-
-
-def sklearn_is_0_20():
-    return _is_version("0.20.")
-
-
 def sklearn_is_0_21():
     return _is_version("0.21.")
 
@@ -33,11 +31,11 @@ def sklearn_is_at_least(version):
 def get_refactored_tests_to_skip():
     """These tests have been edited in order to work with spark.
     They have been moved into this repo e.g. in resource_warning_tests.py"""
-    if sklearn_is_0_19():
+    if sklearn_version_is("0.19"):
         return [
             "test_return_train_score_warn",  # moved to resource_warning_tests.py
         ]
-    elif sklearn_is_0_20():
+    elif sklearn_version_is("0.20"):
         return [
             "test_return_train_score_warn",  # moved to resource_warning_tests.py
             "test_deprecated_grid_search_iid",  # moved to resource_warning_tests.py
