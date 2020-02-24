@@ -464,6 +464,10 @@ class GridSearchCV(SparkBaseSearchCV):
         expensive and is not strictly required to select the parameters that
         yield the best generalization performance.
 
+    spark : SparkSession or bool
+        If True use Spark (getting the exising spark session or creating one
+        if there isn't one running). If False doesn't use Spark acceleration.
+        Alternatively pass a SparkSession object.
 
     Examples
     --------
@@ -813,6 +817,11 @@ class RandomizedSearchCV(SparkBaseSearchCV):
         However computing the scores on the training set can be computationally
         expensive and is not strictly required to select the parameters that
         yield the best generalization performance.
+
+    spark : SparkSession or bool
+        If True use Spark (getting the exising spark session or creating one
+        if there isn't one running). If False doesn't use Spark acceleration.
+        Alternatively pass a SparkSession object.
 
     Attributes
     ----------
