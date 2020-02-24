@@ -14,10 +14,6 @@ def sklearn_version_is(version):
 
 
 # TODO just have single function sklearn_is(<version>)
-def sklearn_is_0_21():
-    return _is_version("0.21.")
-
-
 def sklearn_is_0_22():
     return _is_version("0.22.")
 
@@ -41,7 +37,7 @@ def get_refactored_tests_to_skip():
             "test_deprecated_grid_search_iid",  # moved to resource_warning_tests.py
             "test_validate_parameter_grid_input"  # a function, not a test
         ]
-    elif sklearn_is_0_21():
+    elif sklearn_version_is("0.21"):
         return [
             "test_refit_callable_out_bound",  # parameterized test, moved to test_parameterised_tests
             "test_deprecated_grid_search_iid",  # moved to resource_warning_tests.py

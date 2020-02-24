@@ -21,7 +21,7 @@ from sklearn.utils.testing import assert_warns_message
 from sklearn.utils.testing import clean_warning_registry
 
 from skspark.model_selection import GridSearchCV, RandomizedSearchCV
-from .sklearn_version_specific_utils import sklearn_is_0_21, sklearn_version_is
+from .sklearn_version_specific_utils import sklearn_version_is
 
 if sys.version_info[0] > 2:
     from . pyspark_test import PySparkTest
@@ -130,7 +130,8 @@ class ResourceWarningTests(PySparkTest):
             if key not in train_keys:
                 assert_no_warnings(result['warn'].get, key)
 
-    @skipIf(not (sklearn_version_is("0.20") or sklearn_is_0_21()), "test only applicable to sklearn 0.20 and 0.21")
+    @skipIf(not (sklearn_version_is("0.20") or sklearn_version_is("0.21")),
+            "test only applicable to sklearn 0.20 and 0.21")
     def test_deprecated_grid_search_iid(self):
         depr_message = ("The default of the `iid` parameter will change from True "
                         "to False in version 0.22")
