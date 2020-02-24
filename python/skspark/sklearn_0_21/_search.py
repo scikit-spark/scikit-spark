@@ -468,11 +468,11 @@ class GridSearchCV(SparkBaseSearchCV):
     Examples
     --------
     >>> from sklearn import svm, datasets
-    >>> from sklearn.model_selection import GridSearchCV
+    >>> from skspark.model_selection import GridSearchCV
     >>> iris = datasets.load_iris()
     >>> parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
     >>> svc = svm.SVC(gamma="scale")
-    >>> clf = GridSearchCV(svc, parameters, cv=5)
+    >>> clf = GridSearchCV(svc, parameters, cv=5, spark=True)
     >>> clf.fit(iris.data, iris.target)
     ...                             # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
     GridSearchCV(cv=5, error_score=...,
