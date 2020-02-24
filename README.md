@@ -26,7 +26,8 @@ older versions.
 - 0.18 untested, likely doesn't work
 - 0.19 supported
 - 0.20 supported
-- 0.21 supported (Python 3 only as sklearn dropped support for Python 2)
+- 0.21 supported (Python 3 only)
+- 0.22 supported (Python 3 only)
 
 ## Usage
 
