@@ -21,7 +21,7 @@ from sklearn.utils.testing import assert_warns_message
 from sklearn.utils.testing import clean_warning_registry
 
 from skspark.model_selection import GridSearchCV, RandomizedSearchCV
-from test.sklearn_version_specific_utils import sklearn_is_0_19, sklearn_is_0_21
+from .sklearn_version_specific_utils import sklearn_version_is
 
 if sys.version_info[0] > 2:
     from . pyspark_test import PySparkTest
@@ -56,7 +56,7 @@ class ResourceWarningTests(PySparkTest):
     """This class contains some tests which break due to returning
     ResourceWarnings. The sklearn versions are skipped in favour of these"""
 
-    @skipIf(not sklearn_is_0_19(), "0.19 implementation of test")
+    @skipIf(not sklearn_version_is("0.19"), "0.19 implementation of test")
     def test_return_train_score_warn_0_19(self):
         # Test that warnings are raised. Will be removed in 0.21
 
@@ -91,7 +91,7 @@ class ResourceWarningTests(PySparkTest):
             if key not in train_keys:
                 assert_no_warnings(result['warn'].get, key)
 
-    @skipIf(sklearn_is_0_19() or sklearn_is_0_21(), "0.20 version of test")
+    @skipIf(not sklearn_version_is("0.20"), "0.20 version of test")
     def test_return_train_score_warn(self):
         from sklearn.utils.testing import ignore_warnings
         # Test that warnings are raised. Will be removed in 0.21
@@ -130,7 +130,8 @@ class ResourceWarningTests(PySparkTest):
             if key not in train_keys:
                 assert_no_warnings(result['warn'].get, key)
 
-    @skipIf(sklearn_is_0_19(), "test not applicable to sklearn 0.19")
+    @skipIf(not (sklearn_version_is("0.20") or sklearn_version_is("0.21")),
+            "test only applicable to sklearn 0.20 and 0.21")
     def test_deprecated_grid_search_iid(self):
         depr_message = ("The default of the `iid` parameter will change from True "
                         "to False in version 0.22")

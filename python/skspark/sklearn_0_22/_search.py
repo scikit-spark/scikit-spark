@@ -1,33 +1,35 @@
+import numbers
 import time
-import warnings
 from abc import abstractmethod
-from itertools import product
 
 import numpy as np
 from pyspark.sql import SparkSession
-from sklearn.model_selection._split import check_cv
-from sklearn.model_selection._validation import _fit_and_score
 from sklearn.base import is_classifier, clone
-from sklearn.metrics.scorer import _check_multimetric_scoring
+from sklearn.metrics._scorer import _check_multimetric_scoring
 from sklearn.model_selection._search import BaseSearchCV, _check_param_grid, ParameterGrid, ParameterSampler
-from sklearn.utils._joblib import Parallel, delayed
-from sklearn.utils.validation import indexable
+from sklearn.model_selection._split import check_cv
+from sklearn.utils.validation import indexable, _check_fit_params
+
+from skspark.sklearn_0_21._search import SparkBaseSearchCV as SparkBaseSearchCV_0_21
+
+__all__ = ['GridSearchCV', 'RandomizedSearchCV']
 
 
-class SparkBaseSearchCV(BaseSearchCV):
+class SparkBaseSearchCV(SparkBaseSearchCV_0_21, BaseSearchCV):
     """Abstract base class for spark accelerated hyper parameter search with
     cross-validation.
     """
-
     @abstractmethod
-    def __init__(self, spark, estimator, scoring=None, n_jobs=None, iid='warn',
-                 refit=True, cv='warn', verbose=0, pre_dispatch='2*n_jobs',
-                 error_score='raise-deprecating', return_train_score=True):
+    def __init__(self, spark, estimator, scoring=None, n_jobs=None, iid='deprecated',
+                 refit=True, cv=None, verbose=0, pre_dispatch='2*n_jobs',
+                 error_score=np.nan, return_train_score=True):
 
-        super(SparkBaseSearchCV, self).__init__(
-            estimator, scoring=scoring, n_jobs=n_jobs, iid=iid,
+        BaseSearchCV.__init__(
+            self,
+            estimator=estimator, scoring=scoring, n_jobs=n_jobs, iid=iid,
             refit=refit, cv=cv, verbose=verbose, pre_dispatch=pre_dispatch,
-            error_score=error_score, return_train_score=return_train_score)
+            error_score=error_score, return_train_score=return_train_score
+        )
 
         if isinstance(spark, SparkSession):
             self.spark = spark
@@ -36,58 +38,24 @@ class SparkBaseSearchCV(BaseSearchCV):
         else:
             self.spark = None
 
-    def _run_search(self, evaluate_candidates):
-        """Repeatedly calls `evaluate_candidates` to conduct a search.
-
-        This method, implemented in sub-classes, makes it possible to
-        customize the the scheduling of evaluations: GridSearchCV and
-        RandomizedSearchCV schedule evaluations for their whole parameter
-        search space at once but other more sequential approaches are also
-        possible: for instance is possible to iteratively schedule evaluations
-        for new regions of the parameter search space based on previously
-        collected evaluation results. This makes it possible to implement
-        Bayesian optimization or more generally sequential model-based
-        optimization by deriving from the BaseSearchCV abstract base class.
-
-        Parameters
-        ----------
-        evaluate_candidates : callable
-            This callback accepts a list of candidates, where each candidate is
-            a dict of parameter settings. It returns a dict of all results so
-            far, formatted like ``cv_results_``.
-
-        Examples
-        --------
-
-        ::
-
-            def _run_search(self, evaluate_candidates):
-                'Try C=0.1 only if C=1 is better than C=10'
-                all_results = evaluate_candidates([{'C': 1}, {'C': 10}])
-                score = all_results['mean_test_score']
-                if score[0] < score[1]:
-                    evaluate_candidates([{'C': 0.1}])
-        """
-        raise NotImplementedError("_run_search not implemented.")
-
     def fit(self, X, y=None, groups=None, **fit_params):
         """Run fit with all sets of parameters.
 
         Parameters
         ----------
 
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like of shape (n_samples, n_features)
             Training vector, where n_samples is the number of samples and
             n_features is the number of features.
 
-        y : array-like, shape = [n_samples] or [n_samples, n_output], optional
+        y : array-like of shape (n_samples, n_output) or (n_samples,), optional
             Target relative to X for classification or regression;
             None for unsupervised learning.
 
         groups : array-like, with shape (n_samples,), optional
             Group labels for the samples used while splitting the dataset into
-            train/test set. Only used in conjunction with a "Group" `cv`
-            instance (e.g., `GroupKFold`).
+            train/test set. Only used in conjunction with a "Group" :term:`cv`
+            instance (e.g., :class:`~sklearn.model_selection.GroupKFold`).
 
         **fit_params : dict of string -> object
             Parameters passed to the ``fit`` method of the estimator
@@ -118,9 +86,15 @@ class SparkBaseSearchCV(BaseSearchCV):
             refit_metric = 'score'
 
         X, y, groups = indexable(X, y, groups)
+        fit_params = _check_fit_params(X, fit_params)
+
         n_splits = cv.get_n_splits(X, y, groups)
 
         base_estimator = clone(self.estimator)
+
+        # handled in fit functions below
+        # parallel = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
+        #                     pre_dispatch=self.pre_dispatch)
 
         fit_and_score_kwargs = dict(scorer=scorers,
                                     fit_params=fit_params,
@@ -131,6 +105,7 @@ class SparkBaseSearchCV(BaseSearchCV):
                                     error_score=self.error_score,
                                     verbose=self.verbose)
 
+        # sklearn code above
         if self.spark is None:
             fitting_function = self._run_sklearn_fit
         else:
@@ -141,6 +116,7 @@ class SparkBaseSearchCV(BaseSearchCV):
             groups=groups, n_splits=n_splits,
             fit_and_score_kwargs=fit_and_score_kwargs
         )
+        # sklearn code below
 
         # For multi-metric evaluation, store the best_index_, best_params_ and
         # best_score_ iff refit is one of the scorer names
@@ -150,7 +126,7 @@ class SparkBaseSearchCV(BaseSearchCV):
             # parameter set.
             if callable(self.refit):
                 self.best_index_ = self.refit(results)
-                if not isinstance(self.best_index_, (int, np.integer)):
+                if not isinstance(self.best_index_, numbers.Integral):
                     raise TypeError('best_index_ returned is not an integer')
                 if (self.best_index_ < 0 or
                    self.best_index_ >= len(results["params"])):
@@ -163,8 +139,10 @@ class SparkBaseSearchCV(BaseSearchCV):
             self.best_params_ = results["params"][self.best_index_]
 
         if self.refit:
-            self.best_estimator_ = clone(base_estimator).set_params(
-                **self.best_params_)
+            # we clone again after setting params in case some
+            # of the params are estimators as well.
+            self.best_estimator_ = clone(clone(base_estimator).set_params(
+                **self.best_params_))
             refit_start_time = time.time()
             if y is not None:
                 self.best_estimator_.fit(X, y, **fit_params)
@@ -180,142 +158,6 @@ class SparkBaseSearchCV(BaseSearchCV):
         self.n_splits_ = n_splits
 
         return self
-
-    def _run_sklearn_fit(self, base_estimator, X, y, scorers, cv, groups,
-                         n_splits, fit_and_score_kwargs):
-
-        parallel = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
-                            pre_dispatch=self.pre_dispatch)
-        results = {}
-
-        with parallel:
-            all_candidate_params = []
-            all_out = []
-
-            def evaluate_candidates(candidate_params):
-                candidate_params = list(candidate_params)
-                n_candidates = len(candidate_params)
-
-                if self.verbose > 0:
-                    print("Fitting {0} folds for each of {1} candidates,"
-                          " totalling {2} fits".format(
-                              n_splits, n_candidates, n_candidates * n_splits))
-
-                out = parallel(delayed(_fit_and_score)(clone(base_estimator),
-                                                       X, y,
-                                                       train=train, test=test,
-                                                       parameters=parameters,
-                                                       **fit_and_score_kwargs)
-                               for parameters, (train, test)
-                               in product(candidate_params,
-                                          cv.split(X, y, groups)))
-
-                self._validate_out(out, n_candidates, n_splits)
-
-                all_candidate_params.extend(candidate_params)
-                all_out.extend(out)
-
-                nonlocal results
-                results = self._format_results(
-                    all_candidate_params, scorers, n_splits, all_out)
-                return results
-
-            self._run_search(evaluate_candidates)
-        return results
-
-    def _run_skspark_fit(self, base_estimator, X, y, scorers, cv, groups,
-                         n_splits, fit_and_score_kwargs):
-        all_candidate_params = []
-        all_out = []
-        results = {}
-
-        def evaluate_candidates(candidate_params):
-            candidate_params = list(candidate_params)
-            n_candidates = len(candidate_params)
-
-            param_grid = [(parameters, train, test)
-                          for parameters, (train, test)
-                          in product(candidate_params, cv.split(X, y, groups))]
-
-            # empty grids fail during execution, so need to apply check here
-            self._validate_out(param_grid, n_candidates, n_splits)
-
-            # Because the original python code expects a certain order for the
-            # elements, we need to respect it.
-            indexed_param_grid = list(zip(range(len(param_grid)), param_grid))
-            par_param_grid = self.spark.sparkContext.parallelize(
-                indexed_param_grid, len(indexed_param_grid))
-
-            X_bc = self.spark.sparkContext.broadcast(X)
-            y_bc = self.spark.sparkContext.broadcast(y)
-
-            def spark_task(tup):
-                (index, (parameters, train, test)) = tup
-                local_estimator = clone(base_estimator)
-                local_X = X_bc.value
-                local_y = y_bc.value
-
-                error = None
-                with warnings.catch_warnings(record=True) as warns:
-                    try:
-                        res = _fit_and_score(
-                            local_estimator, X=local_X, y=local_y, train=train,
-                            test=test, parameters=parameters,
-                            **fit_and_score_kwargs)
-                    except Exception as e:
-                        res = None
-                        error = e
-
-                return index, {"results": res, "errors": error, "warnings": warns}
-
-            indexed_out0 = dict(par_param_grid.map(spark_task).collect())
-
-            # process errors and warnings
-            for i in range(len(param_grid)):
-                error_to_be_raised = indexed_out0[i]["errors"]
-                if error_to_be_raised is not None:
-                    raise error_to_be_raised
-
-                for warn in indexed_out0[i]["warnings"]:
-                    warnings.warn(warn.message, warn.category)
-
-            out = [indexed_out0[i]["results"] for i in range(len(param_grid))]
-
-            X_bc.unpersist()
-            y_bc.unpersist()
-
-            self._validate_out(out, n_candidates, n_splits)
-
-            all_out.extend(out)
-            all_candidate_params.extend(candidate_params)
-
-            nonlocal results
-            results = self._format_results(
-                all_candidate_params, scorers, n_splits, all_out)
-            return results
-
-        self._run_search(evaluate_candidates)
-        return results
-
-    @staticmethod
-    def _validate_out(out, n_candidates, n_splits):
-        if len(out) < 1:
-            raise ValueError('No fits were performed. '
-                             'Was the CV iterator empty? '
-                             'Were there no candidates?')
-        elif len(out) != n_candidates * n_splits:
-            raise ValueError('cv.split and cv.get_n_splits returned '
-                             'inconsistent results. Expected {} '
-                             'splits, got {}'
-                             .format(n_splits,
-                                     len(out) // n_candidates))
-
-    def __getstate__(self):
-        """To not try to pickle the non-serializable SparkSession"""
-        attributes = dict(self.__dict__)
-        if 'spark' in attributes.keys():
-            del attributes['spark']
-        return attributes
 
 
 class GridSearchCV(SparkBaseSearchCV):
@@ -385,24 +227,20 @@ class GridSearchCV(SparkBaseSearchCV):
             - A string, giving an expression as a function of n_jobs,
               as in '2*n_jobs'
 
-    iid : boolean, default='warn'
+    iid : boolean, default=False
         If True, return the average score across folds, weighted by the number
         of samples in each test set. In this case, the data is assumed to be
         identically distributed across the folds, and the loss minimized is
-        the total loss per sample, and not the mean loss across the folds. If
-        False, return the average score across folds. Default is True, but
-        will change to False in version 0.22, to correspond to the standard
-        definition of cross-validation.
+        the total loss per sample, and not the mean loss across the folds.
 
-        .. versionchanged:: 0.20
-            Parameter ``iid`` will change from True to False by default in
-            version 0.22, and will be removed in 0.24.
+        .. deprecated:: 0.22
+            Parameter ``iid`` is deprecated in 0.22 and will be removed in 0.24
 
     cv : int, cross-validation generator or an iterable, optional
         Determines the cross-validation splitting strategy.
         Possible inputs for cv are:
 
-        - None, to use the default 3-fold cross validation,
+        - None, to use the default 5-fold cross validation,
         - integer, to specify the number of folds in a `(Stratified)KFold`,
         - :term:`CV splitter`,
         - An iterable yielding (train, test) splits as arrays of indices.
@@ -414,9 +252,8 @@ class GridSearchCV(SparkBaseSearchCV):
         Refer :ref:`User Guide <cross_validation>` for the various
         cross-validation strategies that can be used here.
 
-        .. versionchanged:: 0.20
-            ``cv`` default value if None will change from 3-fold to 5-fold
-            in v0.22.
+        .. versionchanged:: 0.22
+            ``cv`` default value if None changed from 3-fold to 5-fold.
 
     refit : boolean, string, or callable, default=True
         Refit an estimator using the best found parameters on the whole
@@ -428,7 +265,10 @@ class GridSearchCV(SparkBaseSearchCV):
 
         Where there are considerations other than maximum score in
         choosing a best estimator, ``refit`` can be set to a function which
-        returns the selected ``best_index_`` given ``cv_results_``.
+        returns the selected ``best_index_`` given ``cv_results_``. In that
+        case, the ``best_estimator_`` and ``best_parameters_`` will be set
+        according to the returned ``best_index_`` while the ``best_score_``
+        attribute will not be available.
 
         The refitted estimator is made available at the ``best_estimator_``
         attribute and permits using ``predict`` directly on this
@@ -437,7 +277,7 @@ class GridSearchCV(SparkBaseSearchCV):
         Also for multiple metric evaluation, the attributes ``best_index_``,
         ``best_score_`` and ``best_params_`` will only be available if
         ``refit`` is set and all of them will be determined w.r.t this specific
-        scorer. ``best_score_`` is not returned if refit is callable.
+        scorer.
 
         See ``scoring`` parameter to know more about multiple metric
         evaluation.
@@ -452,8 +292,7 @@ class GridSearchCV(SparkBaseSearchCV):
         Value to assign to the score if an error occurs in estimator fitting.
         If set to 'raise', the error is raised. If a numeric value is given,
         FitFailedWarning is raised. This parameter does not affect the refit
-        step, which will always raise the error. Default is 'raise' but from
-        version 0.22 it will change to np.nan.
+        step, which will always raise the error. Default is ``np.nan``.
 
     return_train_score : boolean, default=False
         If ``False``, the ``cv_results_`` attribute will not include training
@@ -475,21 +314,12 @@ class GridSearchCV(SparkBaseSearchCV):
     >>> from skspark.model_selection import GridSearchCV
     >>> iris = datasets.load_iris()
     >>> parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
-    >>> svc = svm.SVC(gamma="scale")
-    >>> clf = GridSearchCV(svc, parameters, cv=5, spark=True)
+    >>> svc = svm.SVC()
+    >>> clf = GridSearchCV(svc, parameters, spark=True)
     >>> clf.fit(iris.data, iris.target)
-    ...                             # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
-    GridSearchCV(cv=5, error_score=...,
-           estimator=SVC(C=1.0, cache_size=..., class_weight=..., coef0=...,
-                         decision_function_shape='ovr', degree=..., gamma=...,
-                         kernel='rbf', max_iter=-1, probability=False,
-                         random_state=None, shrinking=True, tol=...,
-                         verbose=False),
-           iid=..., n_jobs=None,
-           param_grid=..., pre_dispatch=..., refit=..., return_train_score=...,
-           scoring=..., verbose=...)
+    GridSearchCV(estimator=SVC(),
+                 param_grid={'C': [1, 10], 'kernel': ('linear', 'rbf')})
     >>> sorted(clf.cv_results_.keys())
-    ...                             # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
     ['mean_fit_time', 'mean_score_time', 'mean_test_score',...
      'param_C', 'param_kernel', 'params',...
      'rank_test_score', 'split0_test_score',...
@@ -554,7 +384,7 @@ class GridSearchCV(SparkBaseSearchCV):
         scorer's name (``'_<scorer_name>'``) instead of ``'_score'`` shown
         above. ('split0_test_precision', 'mean_train_precision' etc.)
 
-    best_estimator_ : estimator or dict
+    best_estimator_ : estimator
         Estimator that was chosen by the search, i.e. estimator
         which gave highest score (or smallest loss if specified)
         on the left out data. Not available if ``refit=False``.
@@ -566,6 +396,8 @@ class GridSearchCV(SparkBaseSearchCV):
 
         For multi-metric evaluation, this is present only if ``refit`` is
         specified.
+
+        This attribute is not available if ``refit`` is a function.
 
     best_params_ : dict
         Parameter setting that gave the best results on the hold out data.
@@ -629,9 +461,10 @@ class GridSearchCV(SparkBaseSearchCV):
     _required_parameters = ["estimator", "param_grid"]
 
     def __init__(self, estimator, param_grid, scoring=None,
-                 n_jobs=None, iid='warn', refit=True, cv='warn', verbose=0,
-                 pre_dispatch='2*n_jobs', error_score='raise-deprecating',
-                 return_train_score=False, spark=True):
+                 n_jobs=None, iid='deprecated', refit=True, cv=None,
+                 verbose=0, pre_dispatch='2*n_jobs',
+                 error_score=np.nan, return_train_score=False,
+                 spark=True):
         super().__init__(
             spark=spark, estimator=estimator, scoring=scoring,
             n_jobs=n_jobs, iid=iid, refit=refit, cv=cv, verbose=verbose,
@@ -667,13 +500,9 @@ class RandomizedSearchCV(SparkBaseSearchCV):
     It is highly recommended to use continuous distributions for continuous
     parameters.
 
-    Note that before SciPy 0.16, the ``scipy.stats.distributions`` do not
-    accept a custom RNG instance and always use the singleton RNG from
-    ``numpy.random``. Hence setting ``random_state`` will not guarantee a
-    deterministic iteration whenever ``scipy.stats`` distributions are used to
-    define the parameter search space.
-
     Read more in the :ref:`User Guide <randomized_parameter_search>`.
+
+    .. versionadded:: 0.14
 
     Parameters
     ----------
@@ -683,11 +512,13 @@ class RandomizedSearchCV(SparkBaseSearchCV):
         Either estimator needs to provide a ``score`` function,
         or ``scoring`` must be passed.
 
-    param_distributions : dict
+    param_distributions : dict or list of dicts
         Dictionary with parameters names (string) as keys and distributions
         or lists of parameters to try. Distributions must provide a ``rvs``
         method for sampling (such as those from scipy.stats.distributions).
         If a list is given, it is sampled uniformly.
+        If a list of dicts is given, first a dict is sampled uniformly, and
+        then a parameter is sampled using that dict as above.
 
     n_iter : int, default=10
         Number of parameter settings that are sampled. n_iter trades
@@ -731,24 +562,20 @@ class RandomizedSearchCV(SparkBaseSearchCV):
             - A string, giving an expression as a function of n_jobs,
               as in '2*n_jobs'
 
-    iid : boolean, default='warn'
+    iid : boolean, default=False
         If True, return the average score across folds, weighted by the number
         of samples in each test set. In this case, the data is assumed to be
         identically distributed across the folds, and the loss minimized is
-        the total loss per sample, and not the mean loss across the folds. If
-        False, return the average score across folds. Default is True, but
-        will change to False in version 0.22, to correspond to the standard
-        definition of cross-validation.
+        the total loss per sample, and not the mean loss across the folds.
 
-        .. versionchanged:: 0.20
-            Parameter ``iid`` will change from True to False by default in
-            version 0.22, and will be removed in 0.24.
+        .. deprecated:: 0.22
+            Parameter ``iid`` is deprecated in 0.22 and will be removed in 0.24
 
     cv : int, cross-validation generator or an iterable, optional
         Determines the cross-validation splitting strategy.
         Possible inputs for cv are:
 
-        - None, to use the default 3-fold cross validation,
+        - None, to use the default 5-fold cross validation,
         - integer, to specify the number of folds in a `(Stratified)KFold`,
         - :term:`CV splitter`,
         - An iterable yielding (train, test) splits as arrays of indices.
@@ -760,9 +587,8 @@ class RandomizedSearchCV(SparkBaseSearchCV):
         Refer :ref:`User Guide <cross_validation>` for the various
         cross-validation strategies that can be used here.
 
-        .. versionchanged:: 0.20
-            ``cv`` default value if None will change from 3-fold to 5-fold
-            in v0.22.
+        .. versionchanged:: 0.22
+            ``cv`` default value if None changed from 3-fold to 5-fold.
 
     refit : boolean, string, or callable, default=True
         Refit an estimator using the best found parameters on the whole
@@ -774,7 +600,10 @@ class RandomizedSearchCV(SparkBaseSearchCV):
 
         Where there are considerations other than maximum score in
         choosing a best estimator, ``refit`` can be set to a function which
-        returns the selected ``best_index_`` given the ``cv_results``.
+        returns the selected ``best_index_`` given the ``cv_results``. In that
+        case, the ``best_estimator_`` and ``best_parameters_`` will be set
+        according to the returned ``best_index_`` while the ``best_score_``
+        attribute will not be available.
 
         The refitted estimator is made available at the ``best_estimator_``
         attribute and permits using ``predict`` directly on this
@@ -783,7 +612,7 @@ class RandomizedSearchCV(SparkBaseSearchCV):
         Also for multiple metric evaluation, the attributes ``best_index_``,
         ``best_score_`` and ``best_params_`` will only be available if
         ``refit`` is set and all of them will be determined w.r.t this specific
-        scorer. When refit is callable, ``best_score_`` is disabled.
+        scorer.
 
         See ``scoring`` parameter to know more about multiple metric
         evaluation.
@@ -806,8 +635,7 @@ class RandomizedSearchCV(SparkBaseSearchCV):
         Value to assign to the score if an error occurs in estimator fitting.
         If set to 'raise', the error is raised. If a numeric value is given,
         FitFailedWarning is raised. This parameter does not affect the refit
-        step, which will always raise the error. Default is 'raise' but from
-        version 0.22 it will change to np.nan.
+        step, which will always raise the error. Default is ``np.nan``.
 
     return_train_score : boolean, default=False
         If ``False``, the ``cv_results_`` attribute will not include training
@@ -876,7 +704,7 @@ class RandomizedSearchCV(SparkBaseSearchCV):
         scorer's name (``'_<scorer_name>'``) instead of ``'_score'`` shown
         above. ('split0_test_precision', 'mean_train_precision' etc.)
 
-    best_estimator_ : estimator or dict
+    best_estimator_ : estimator
         Estimator that was chosen by the search, i.e. estimator
         which gave highest score (or smallest loss if specified)
         on the left out data. Not available if ``refit=False``.
@@ -891,6 +719,8 @@ class RandomizedSearchCV(SparkBaseSearchCV):
 
         For multi-metric evaluation, this is not available if ``refit`` is
         ``False``. See ``refit`` parameter for more information.
+
+        This attribute is not available if ``refit`` is a function.
 
     best_params_ : dict
         Parameter setting that gave the best results on the hold out data.
@@ -946,13 +776,29 @@ class RandomizedSearchCV(SparkBaseSearchCV):
         A generator over parameter settings, constructed from
         param_distributions.
 
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_iris
+    >>> from sklearn.linear_model import LogisticRegression
+    >>> from sklearn.model_selection import RandomizedSearchCV
+    >>> from scipy.stats import uniform
+    >>> iris = load_iris()
+    >>> logistic = LogisticRegression(solver='saga', tol=1e-2, max_iter=200,
+    ...                               random_state=0)
+    >>> distributions = dict(C=uniform(loc=0, scale=4),
+    ...                      penalty=['l2', 'l1'])
+    >>> clf = RandomizedSearchCV(logistic, distributions, random_state=0)
+    >>> search = clf.fit(iris.data, iris.target)
+    >>> search.best_params_
+    {'C': 2..., 'penalty': 'l1'}
     """
     _required_parameters = ["estimator", "param_distributions"]
 
     def __init__(self, estimator, param_distributions, n_iter=10, scoring=None,
-                 n_jobs=None, iid='warn', refit=True,
-                 cv='warn', verbose=0, pre_dispatch='2*n_jobs',
-                 random_state=None, error_score='raise-deprecating',
+                 n_jobs=None, iid='deprecated', refit=True,
+                 cv=None, verbose=0, pre_dispatch='2*n_jobs',
+                 random_state=None, error_score=np.nan,
                  return_train_score=False, spark=True):
         self.param_distributions = param_distributions
         self.n_iter = n_iter
