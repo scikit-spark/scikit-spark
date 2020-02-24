@@ -1,12 +1,6 @@
 import sklearn
 
 
-def _is_version(version_check):
-    if sklearn.__version__.startswith(version_check):
-        return True
-    return False
-
-
 def sklearn_version_is(version):
     if sklearn.__version__.startswith(version):
         return True
