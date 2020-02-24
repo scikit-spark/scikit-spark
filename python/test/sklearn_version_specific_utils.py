@@ -7,6 +7,7 @@ def _is_version(version_check):
     return False
 
 
+# TODO just have single function sklearn_is(<version>)
 def sklearn_is_0_19():
     return _is_version("0.19.")
 
