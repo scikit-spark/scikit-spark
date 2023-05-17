@@ -36,6 +36,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: 8
+          distribution: adopt
 
       - name: Install scikit-learn
         run: pip install scikit-learn==${{ matrix.sklearn-version }}
