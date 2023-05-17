@@ -1,4 +1,6 @@
 from functools import partial
+from test.pyspark_test import PySparkTest
+from test.sklearn_version_specific_utils import sklearn_is_at_least, sklearn_version_is
 from unittest import skipIf
 
 import pytest
@@ -6,12 +8,8 @@ from scipy.stats import uniform
 from sklearn.datasets import make_classification
 from sklearn.linear_model import SGDClassifier
 from sklearn.model_selection import ParameterGrid, ParameterSampler, train_test_split
-
-from skspark.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.svm import LinearSVC
-
-from test.pyspark_test import PySparkTest
-from test.sklearn_version_specific_utils import sklearn_is_at_least
+from skspark.model_selection import GridSearchCV, RandomizedSearchCV
 
 
 class _FitParamClassifier(SGDClassifier):
@@ -58,7 +56,7 @@ class TestParameterisedTests(PySparkTest):
             with pytest.raises(IndexError, match='best_index_ index out of range'):
                 clf.fit(X, y)
 
-    @skipIf(not sklearn_is_at_least("0.21"), "test for sklearn 0.21 and above")
+    @skipIf(not sklearn_is_at_least("0.21") or sklearn_version_is("1."), "test for sklearn >=0.21,<1.0")
     def test_validate_parameter_grid_input_wrapper(self):
         def test_validate_parameter_grid_input(input, error_type, error_message):
             with pytest.raises(error_type, match=error_message):
@@ -67,13 +65,13 @@ class TestParameterisedTests(PySparkTest):
         parameters = [
             (0, TypeError, r'Parameter grid is not a dict or a list \(0\)'),
             ([{'foo': [0]}, 0], TypeError, r'Parameter grid is not a dict \(0\)'),
-            ({'foo': 0}, TypeError, "Parameter grid value is not iterable " 
+            ({'foo': 0}, TypeError, "Parameter grid value is not iterable "
                                     r"\(key='foo', value=0\)")
         ]
         for input, error_type, error_message in parameters:
             test_validate_parameter_grid_input(input, error_type, error_message)
 
-    @skipIf(not sklearn_is_at_least("0.22"), "test for sklearn 0.22 and above")
+    @skipIf(not sklearn_is_at_least("0.22") or sklearn_version_is("1."), "test for sklearn >=0.21,<1.0")
     def test_validate_parameter_input_wrapper(self):
         from sklearn.model_selection.tests.test_search import test_validate_parameter_input
 

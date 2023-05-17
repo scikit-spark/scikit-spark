@@ -62,10 +62,11 @@ def _add_to_module():
     # resource_warning_tests.py
     refactored_tests = get_refactored_tests_to_skip()
 
-    for test in all_tests:
-        if test.__name__ not in refactored_tests:
-            test_to_add = _create_method(test)
-            setattr(AllTests, test.__name__, test_to_add)
+    if refactored_tests:
+        for test in all_tests:
+            if test.__name__ not in refactored_tests:
+                test_to_add = _create_method(test)
+                setattr(AllTests, test.__name__, test_to_add)
 
 
 _add_to_module()

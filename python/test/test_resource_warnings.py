@@ -13,12 +13,12 @@ from unittest import skipIf
 import numpy as np
 from sklearn.datasets import make_blobs
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.model_selection import GridSearchCV, KFold
+from sklearn.model_selection import KFold
 from sklearn.svm import SVC, LinearSVC
 from skspark.model_selection import GridSearchCV, RandomizedSearchCV
 
 from .sklearn_version_specific_utils import sklearn_version_is
-from .utils import assert_warns_message, clean_warning_registry
+from .utils import assert_warns_message, clean_warning_registry, ignore_warnings
 
 if sys.version_info[0] > 2:
     from .pyspark_test import PySparkTest
@@ -90,8 +90,6 @@ class TestResourceWarningTests(PySparkTest):
 
     @skipIf(not sklearn_version_is("0.20"), "0.20 version of test")
     def test_return_train_score_warn(self):
-        from sklearn.utils.testing import ignore_warnings
-
         # Test that warnings are raised. Will be removed in 0.21
 
         X = np.arange(100).reshape(10, 10)

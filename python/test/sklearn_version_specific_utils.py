@@ -43,6 +43,9 @@ def get_refactored_tests_to_skip():
             "test_search_default_iid",  # moved to test_parameterised_tests
             "test_validate_parameter_input",  # moved to test_parameterised_tests
         ]
+    elif sklearn_version_is("1."):
+        # TODO
+        return []
     else:
         raise NotImplementedError(
             "Unsupported sklearn version {}".format(sklearn.__version__))

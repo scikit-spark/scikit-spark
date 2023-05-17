@@ -1,13 +1,13 @@
 import copy
 import sys
 
-from sklearn import svm, datasets
-from sklearn.utils.testing import assert_true, assert_false
-
+from sklearn import datasets, svm
 from skspark.model_selection import GridSearchCV, RandomizedSearchCV
 
+from .utils import assert_false, assert_true
+
 if sys.version_info[0] > 2:
-    from . pyspark_test import PySparkTest
+    from .pyspark_test import PySparkTest
 else:
     from pyspark_test import PySparkTest
 
