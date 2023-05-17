@@ -11,4 +11,5 @@ else
     ARGS="$@"
 fi
 
+export PYSPARK_PYTHON=$(which python)
 exec nosetests $ARGS --where $DIR
