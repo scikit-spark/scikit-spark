@@ -10,7 +10,6 @@ jobs:
       matrix:
         python-version: ["3.11", "3.10", "3.9", "3.8"]
         sklearn-version: ["0.22.3", "1.2.2"]
-        pyspark-version: ["2.4.8", "3.3.2"]
 
     exclude:
       - python-version: "3.9"
@@ -43,8 +42,8 @@ jobs:
       - name: Install scikit-learn
         run: pip install scikit-learn==${{ matrix.sklearn-version }}
 
-      - name: Install pyspark:
-        run: pip install pyspark==${{ matrix.pyspark-version }}
+      - name: Install pyspark
+        run: pip install pyspark==3.3.2
 
       - name: Run tests
         run: bash python/run-tests.sh
