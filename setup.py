@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 description = "Spark acceleration for Scikit-Learn cross validation techniques"
 
@@ -13,7 +13,7 @@ keywords = [
 ]
 
 install_requires = [
-    "numpy>=1.13.0",
+    "numpy>=1.13,<1.24",
     "six==1.11.0"
 ]
 
