@@ -44,7 +44,7 @@ jobs:
         run: pip install scikit-learn==${{ matrix.sklearn-version }}
 
       - name: Install pyspark:
-        run: pip install scikit-learn==${{ matrix.pyspakr-version }}
+        run: pip install pyspark==${{ matrix.pyspark-version }}
 
       - name: Run tests
         run: bash python/run-tests.sh
