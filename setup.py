@@ -13,8 +13,7 @@ keywords = [
 ]
 
 install_requires = [
-    "numpy>=1.13,<1.24",
-    "six==1.11.0"
+    "scikit-learn~=1.0",
 ]
 
 with open("README.md", "r") as fh:
@@ -33,6 +32,9 @@ setup(
     packages=find_packages("python", exclude="tests"),
     url="https://github.com/scikit-spark/scikit-spark",
     install_requires=install_requires,
+    extras_require={
+        "spark": ["pyspark[sql]~=3.0"],
+    },
     license="Apache 2.0"
 )
 
