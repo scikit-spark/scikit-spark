@@ -44,5 +44,8 @@ jobs:
       - name: Install pyspark
         run: pip install pyspark==3.3.2
 
-      - name: Run tests
+      - name: Run tests (pytest)
         run: pytest --disable-warnings -vv -rxXs python/test
+
+      - name: Run tests (nose)
+        run: bash python/run-tests.sh
