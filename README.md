@@ -59,13 +59,13 @@ spark = SparkSession.builder\
 # How to run grid search
 from skspark.model_selection import GridSearchCV
 
-gs = GridSearchCV(svc, parameters)
+gs = GridSearchCV(svc, parameters, spark=spark)
 gs.fit(iris.data, iris.target)
 
 # How to run random search
 from skspark.model_selection import RandomizedSearchCV
 
-rs = RandomizedSearchCV(spark, svc, parameters)
+rs = RandomizedSearchCV(svc, parameters, spark=spark)
 rs.fit(iris.data, iris.target)
 ```
 
