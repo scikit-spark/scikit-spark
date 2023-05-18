@@ -1,46 +1,46 @@
 # Spark acceleration for Scikit-Learn
 
-This project is a major re-write of the 
-[spark-sklearn](https://github.com/databricks/spark-sklearn) project, which 
-seems to no longer be under development. It focuses specifically on the 
+This project is a major re-write of the
+[spark-sklearn](https://github.com/databricks/spark-sklearn) project, which
+seems to no longer be under development. It focuses specifically on the
 acceleration of Scikit-Learn's cross validation functionality using PySpark.
 
 ### Improvements over spark-sklearn
-`scikit-spark` supports `scikit-learn` versions past 0.19, `spark-sklearn` [have stated that they are probably not 
+`scikit-spark` supports `scikit-learn` versions past 0.19, `spark-sklearn` [have stated that they are probably not
 going to support newer versions](https://github.com/databricks/spark-sklearn/issues/113).
 
-The functionality in `scikit-spark` is based on `sklearn.model_selection` module rather than the 
-deprecated and soon to be removed `sklearn.grid_search`. The new `model_selection` versions 
+The functionality in `scikit-spark` is based on `sklearn.model_selection` module rather than the
+deprecated and soon to be removed `sklearn.grid_search`. The new `model_selection` versions
 contain several nicer features and `scikit-spark` maintains full compatibility.
 
 ## Installation
 The package can be installed through pip:
 ```bash
 pip install scikit-spark
+
+# or to also install with pyspark
+pip install scikit-spark[spark]
 ```
 
-It has so far only been tested with Spark 2.2.0 and up, but may work with 
-older versions. 
+It is currently tested with Spark 3.3.2 and 3.4.0, but should work with
+older versions (e.g. Spark 2.4.x). Python versions 3.8 and up are also
+currently tested, though 3.11 is only supported with PySpark 3.4.0.
 
 ### Supported scikit-learn versions
-- 0.18 untested, likely doesn't work
-- 0.19 supported
-- 0.20 supported
-- 0.21 supported (Python 3 only)
-- 0.22 supported (Python 3 only)
+- 1.2.2
 
 ## Usage
 
-The functionality here is meant to as closely resemble using Scikit-Learn as 
+The functionality here is meant to as closely resemble using Scikit-Learn as
 possible. By default (with `spark=True`) the `SparkSession` is obtained
 internally by calling `SparkSession.builder.getOrCreate()`, so the instantiation
-and calling of the functions is the same (You will preferably have already 
-created a `SparkSession`). 
+and calling of the functions is the same (You will preferably have already
+created a `SparkSession`).
 
 This example is adapted from the Scikit-Learn documentation. It instantiates
-a local `SparkSession`, and distributes the cross validation folds and 
-iterations using this. In actual use, to get the benefit of this package it 
-should be used distributed across several machines with Spark as running it 
+a local `SparkSession`, and distributes the cross validation folds and
+iterations using this. In actual use, to get the benefit of this package it
+should be used distributed across several machines with Spark as running it
 locally is slower than the `Scikit-Learn` parallelisation implementation.
 
 ```python
@@ -78,10 +78,10 @@ rs.fit(iris.data, iris.target)
     - model_selection.cross_val_score
 
 *The docstrings are modifications of the Scikit-Learn ones and are still being
-converted to specifically refer to this project.* 
+converted to specifically refer to this project.*
 
-## Performance optimisations 
+## Performance optimisations
 
-### Reducing RAM usage 
+### Reducing RAM usage
 *Coming soon*
 
