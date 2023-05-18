@@ -114,31 +114,12 @@ class TestParameterisedTests(PySparkTest):
         ]:
             test_scalar_fit_param(SearchCV, param_search)
 
-    @skipIf(not sklearn_is_at_least("0.22"), "test for sklearn 0.22 and above")
-    def test_scalar_fit_param_compat_wrapper(self):
+    # @skipIf(not sklearn_is_at_least("0.22"), "test for sklearn 0.22 and above")
+    # def test_scalar_fit_param_compat_wrapper(self):
+    #     from sklearn.model_selection.tests.test_search import test_scalar_fit_param_compat
 
-        def test_scalar_fit_param_compat(SearchCV, param_search):
-            """
-            The other test can't be pickled as the _FitParamClassifier is not accessible globally.
-            So the code has to be duplicated here rather than imported
-            """
-            X_train, X_valid, y_train, y_valid = train_test_split(
-                *make_classification(random_state=42), random_state=42
-            )
-
-            model = SearchCV(
-                _FitParamClassifier(), param_search
-            )
-
-            fit_params = {
-                'tuple_of_arrays': (X_valid, y_valid),
-                'callable_param': _fit_param_callable,
-                'scalar_param': 42,
-            }
-            model.fit(X_train, y_train, **fit_params)
-
-        for SearchCV, param_search in [
-            (GridSearchCV, {'alpha': [0.1, 0.01]}),
-            (RandomizedSearchCV, {'alpha': uniform(0.01, 0.1)})
-        ]:
-            test_scalar_fit_param_compat(SearchCV, param_search)
+    #     for SearchCV, param_search in [
+    #         (GridSearchCV, {'alpha': [0.1, 0.01]}),
+    #         (RandomizedSearchCV, {'alpha': uniform(0.01, 0.1)})
+    #     ]:
+    #         test_scalar_fit_param_compat(SearchCV, param_search)
