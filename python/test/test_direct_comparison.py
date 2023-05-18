@@ -2,16 +2,14 @@ import sys
 
 from sklearn import datasets
 from sklearn.model_selection import GridSearchCV as SklearnGridSearchCV
-from sklearn.model_selection import RandomizedSearchCV \
-    as SklearnRandomizedSearchCV
+from sklearn.model_selection import RandomizedSearchCV as SklearnRandomizedSearchCV
 from sklearn.svm import SVC
 
 from skspark.model_selection import GridSearchCV as SparkGridSearchCV
-from skspark.model_selection import RandomizedSearchCV \
-    as SparkRandomizedSearchCV
+from skspark.model_selection import RandomizedSearchCV as SparkRandomizedSearchCV
 
 if sys.version_info[0] > 2:
-    from . pyspark_test import PySparkTest
+    from .pyspark_test import PySparkTest
 else:
     from pyspark_test import PySparkTest
 
