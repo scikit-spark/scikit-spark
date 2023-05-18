@@ -8,15 +8,11 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"] # 3.11 not working with Spark yet
-        sklearn-version: ["0.22.2", "1.2.2"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        pyspark-version: ["3.3.2", "3.4.0"]
         exclude:
-          - python-version: "3.9"
-            sklearn-version: "0.22.2"
-          - python-version: "3.10"
-            sklearn-version: "0.22.2"
           - python-version: "3.11"
-            sklearn-version: "0.22.2"
+            pyspark-version: "3.3.2"
 
     steps:
       - name: Checkout code
@@ -27,25 +23,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements-tests.txt
-          pip install -e .
-
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           java-version: 8
           distribution: adopt
 
-      - name: Install scikit-learn
-        run: pip install scikit-learn==${{ matrix.sklearn-version }}
-
       - name: Install pyspark
-        run: pip install pyspark==3.3.2
+        run: pip install pyspark==${{ matrix.pyspark-version }}
+
+      - name: Install test requirements
+        run: pip install -r requirements-test.txt
+
+      - name: Install skspark
+        run: pip install .
 
       - name: Run tests (pytest)
         run: pytest --disable-warnings -vv -rxXs python/test
 
-      # - name: Run tests (nose)
-      #   run: bash python/run-tests.sh
+      - name: Run tests (nose)
+        run: bash python/run-tests.sh
