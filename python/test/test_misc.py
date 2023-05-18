@@ -1,15 +1,10 @@
 import copy
-import sys
 
 from sklearn import datasets, svm
+
 from skspark.model_selection import GridSearchCV, RandomizedSearchCV
-
+from .pyspark_test import PySparkTest
 from .utils import assert_false, assert_true
-
-if sys.version_info[0] > 2:
-    from .pyspark_test import PySparkTest
-else:
-    from pyspark_test import PySparkTest
 
 
 class MiscTests(PySparkTest):
