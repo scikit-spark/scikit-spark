@@ -10,3 +10,5 @@ build
 .gitconfig
 .env
 .pytest_cache/
+.vscode/
+.isort.cfg
