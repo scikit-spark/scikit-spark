@@ -33,7 +33,7 @@ jobs:
         run: pip install pyspark==${{ matrix.pyspark-version }}
 
       - name: Install test requirements
-        run: pip install -r requirements-test.txt
+        run: pip install -r requirements-tests.txt
 
       - name: Install skspark
         run: pip install .
