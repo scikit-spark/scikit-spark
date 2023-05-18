@@ -41,5 +41,7 @@ jobs:
       - name: Run tests (pytest)
         run: pytest --disable-warnings -vv -rxXs python/test
 
+      # Nose is no longer actively developed and doesn't work on python 3.10+
       - name: Run tests (nose)
         run: bash python/run-tests.sh
+        if: matrix.python-version == 3.8 || matrix.python-version == 3.9
