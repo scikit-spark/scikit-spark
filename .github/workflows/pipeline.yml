@@ -47,5 +47,5 @@ jobs:
       - name: Run tests (pytest)
         run: pytest --disable-warnings -vv -rxXs python/test
 
-      - name: Run tests (nose)
-        run: bash python/run-tests.sh
+      # - name: Run tests (nose)
+      #   run: bash python/run-tests.sh
