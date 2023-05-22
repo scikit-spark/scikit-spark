@@ -1,16 +1,16 @@
 # Spark acceleration for Scikit-Learn
 
-This project is a major re-write of the
-[spark-sklearn](https://github.com/databricks/spark-sklearn) project, which
-seems to no longer be under development. It focuses specifically on the
+This project is a major re-write of the 
+[spark-sklearn](https://github.com/databricks/spark-sklearn) project, which 
+seems to no longer be under development. It focuses specifically on the 
 acceleration of Scikit-Learn's cross validation functionality using PySpark.
 
 ### Improvements over spark-sklearn
-`scikit-spark` supports `scikit-learn` versions past 0.19, `spark-sklearn` [have stated that they are probably not
+`scikit-spark` supports `scikit-learn` versions past 0.19, `spark-sklearn` [have stated that they are probably not 
 going to support newer versions](https://github.com/databricks/spark-sklearn/issues/113).
 
-The functionality in `scikit-spark` is based on `sklearn.model_selection` module rather than the
-deprecated and soon to be removed `sklearn.grid_search`. The new `model_selection` versions
+The functionality in `scikit-spark` is based on `sklearn.model_selection` module rather than the 
+deprecated and soon to be removed `sklearn.grid_search`. The new `model_selection` versions 
 contain several nicer features and `scikit-spark` maintains full compatibility.
 
 ## Installation
@@ -31,16 +31,16 @@ currently tested, though 3.11 is only supported with PySpark 3.4.0.
 
 ## Usage
 
-The functionality here is meant to as closely resemble using Scikit-Learn as
+The functionality here is meant to as closely resemble using Scikit-Learn as 
 possible. By default (with `spark=True`) the `SparkSession` is obtained
 internally by calling `SparkSession.builder.getOrCreate()`, so the instantiation
-and calling of the functions is the same (You will preferably have already
-created a `SparkSession`).
+and calling of the functions is the same (You will preferably have already 
+created a `SparkSession`). 
 
 This example is adapted from the Scikit-Learn documentation. It instantiates
-a local `SparkSession`, and distributes the cross validation folds and
-iterations using this. In actual use, to get the benefit of this package it
-should be used distributed across several machines with Spark as running it
+a local `SparkSession`, and distributes the cross validation folds and 
+iterations using this. In actual use, to get the benefit of this package it 
+should be used distributed across several machines with Spark as running it 
 locally is slower than the `Scikit-Learn` parallelisation implementation.
 
 ```python
@@ -78,10 +78,10 @@ rs.fit(iris.data, iris.target)
     - model_selection.cross_val_score
 
 *The docstrings are modifications of the Scikit-Learn ones and are still being
-converted to specifically refer to this project.*
+converted to specifically refer to this project.* 
 
-## Performance optimisations
+## Performance optimisations 
 
-### Reducing RAM usage
+### Reducing RAM usage 
 *Coming soon*
 
