@@ -12,4 +12,4 @@ else
 fi
 
 export PYSPARK_PYTHON=$(which python)
-exec nosetests $ARGS --where $DIR
+pytest --disable-warnings -vv -rxXs $DIR/test
