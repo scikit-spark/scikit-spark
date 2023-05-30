@@ -66,7 +66,7 @@ class SparkBaseSearchCV(BaseSearchCV):
         pre_dispatch="2*n_jobs",
         error_score=np.nan,
         return_train_score=True,
-        spark=None,
+        spark=True,
     ):
         super().__init__(
             scoring=scoring,
@@ -827,7 +827,7 @@ class GridSearchCV(SparkBaseSearchCV):
         pre_dispatch="2*n_jobs",
         error_score=np.nan,
         return_train_score=False,
-        spark=None,
+        spark=True,
     ):
         super().__init__(
             estimator=estimator,
@@ -1219,7 +1219,7 @@ class RandomizedSearchCV(SparkBaseSearchCV):
         random_state=None,
         error_score=np.nan,
         return_train_score=False,
-        spark=None,
+        spark=True,
     ):
         self.param_distributions = param_distributions
         self.n_iter = n_iter
