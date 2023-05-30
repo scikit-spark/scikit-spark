@@ -50,3 +50,21 @@ def pytest_runtest_call(item):
     if item.parent.name == "test_sklearn.py":
         testfunction = item.obj
         item.obj = monkey_patch_decorator(testfunction)
+
+
+def pytest_collection_modifyitems(session, config, items):
+    """Remove tests from the collection
+
+    The following tests (from sklearn) are removed:
+    * test_search_cv_verbose_3 - this checks the output from stderr which is swallowed by the pyspark executors
+
+    See https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_collection_modifyitems
+    """
+    tests_to_skip = [
+        "test_search_cv_verbose_3",
+    ]
+
+    skip_listed = pytest.mark.skip(reason="skipped")
+    for item in items:
+        if item.name.startswith(*tests_to_skip):
+            item.add_marker(skip_listed)
