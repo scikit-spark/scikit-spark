@@ -21,7 +21,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="scikit-spark",
-    version="0.5.0",
+    version="1.0.0",
     author="Ganesh N. Sivalingam",
     author_email="g.n.sivalingam@gmail.com",
     description=description,
