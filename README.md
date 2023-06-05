@@ -29,6 +29,15 @@ currently tested, though 3.11 is only supported with PySpark 3.4.0.
 ### Supported scikit-learn versions
 - 1.2.2
 
+### Older versions of scikit-learn
+
+The following pre-1.0 releases of scikit-learn are supported by `scikit-spark==0.4.0`:
+
+- 0.19
+- 0.20
+- 0.21 (Python 3 only)
+- 0.22 (Python 3 only)
+
 ## Usage
 
 The functionality here is meant to as closely resemble using Scikit-Learn as 
