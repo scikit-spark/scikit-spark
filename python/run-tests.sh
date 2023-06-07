@@ -11,4 +11,5 @@ else
     ARGS="$@"
 fi
 
-exec nosetests $ARGS --where $DIR
+export PYSPARK_PYTHON=$(which python)
+pytest --disable-warnings -vv -rxXs $DIR/test

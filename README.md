@@ -17,17 +17,26 @@ contain several nicer features and `scikit-spark` maintains full compatibility.
 The package can be installed through pip:
 ```bash
 pip install scikit-spark
+
+# or to also install with pyspark
+pip install scikit-spark[spark]
 ```
 
-It has so far only been tested with Spark 2.2.0 and up, but may work with 
-older versions. 
+It is currently tested with Spark 3.3.2 and 3.4.0, but should work with
+older versions (e.g. Spark 2.4.x). Python versions 3.8 and up are also
+currently tested, though 3.11 is only supported with PySpark 3.4.0.
 
 ### Supported scikit-learn versions
-- 0.18 untested, likely doesn't work
-- 0.19 supported
-- 0.20 supported
-- 0.21 supported (Python 3 only)
-- 0.22 supported (Python 3 only)
+- 1.2.2
+
+### Older versions of scikit-learn
+
+The following pre-1.0 releases of scikit-learn are supported by `scikit-spark==0.4.0`:
+
+- 0.19
+- 0.20
+- 0.21 (Python 3 only)
+- 0.22 (Python 3 only)
 
 ## Usage
 
@@ -59,13 +68,13 @@ spark = SparkSession.builder\
 # How to run grid search
 from skspark.model_selection import GridSearchCV
 
-gs = GridSearchCV(svc, parameters)
+gs = GridSearchCV(svc, parameters, spark=spark)
 gs.fit(iris.data, iris.target)
 
 # How to run random search
 from skspark.model_selection import RandomizedSearchCV
 
-rs = RandomizedSearchCV(spark, svc, parameters)
+rs = RandomizedSearchCV(svc, parameters, spark=spark)
 rs.fit(iris.data, iris.target)
 ```
 
