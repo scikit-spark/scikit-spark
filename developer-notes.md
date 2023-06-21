@@ -11,9 +11,8 @@ SparkBaseSearchCV should also be created, and that needs to implement `fit()`.
     - `setup.py`
     - `__init__.py` 
     - `changelog` (give description of work)
-- Update .travis.yml
-    - Add `SKLEARN_VERSION` in test matrix
-    - Add to excluded list for Python 2 if necessary
+- Update `.github/workflows/pipeline.yml`
+    - Add new version to test matrix
 
 ### Setting up tests
 There is a bash script for running all tests `scikit-spark/python/run-tests.sh`.
