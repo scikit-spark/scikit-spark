@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
+        scikit-learn-version: ["1.0.*", "1.1.*", "1.2.*"]
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         pyspark-version: ["3.3.2", "3.4.0"]
         java-version: ["8", "11"]
@@ -36,6 +37,9 @@ jobs:
 
       - name: Install pyspark
         run: pip install pyspark==${{ matrix.pyspark-version }}
+
+      - name: Install scikit-learn
+        run: pip install scikit-learn==${{ matrix.scikit-learn-version }}
 
       - name: Install test requirements
         run: pip install -r requirements-tests.txt
