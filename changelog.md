@@ -1,3 +1,13 @@
+# 1.0.0
+- Scikit-learn support
+  - added 1.* support
+  - dropped support for 0.*, use previous versions for support
+- Spark version support
+  - added support for Spark 3.3.2 and 3.4.0
+  - dropped support for Spark 2.*, use previous versions for support
+- Java 11 support and testing added (in addition to Java 8)
+- Automated testing migrated to Github Actions from Travis
+
 # 0.4.0
 - scikit-learn 0.22 support added
 
