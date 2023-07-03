@@ -1,6 +1,6 @@
 # 1.0.0
 - Scikit-learn support
-  - added >=1.1 support
+  - added >=1.2 support
   - dropped support for 0.*, use previous versions for support
 - Spark version support
   - added support for Spark 3.3.2 and 3.4.0
