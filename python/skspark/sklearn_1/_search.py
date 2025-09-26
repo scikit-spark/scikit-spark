@@ -26,13 +26,7 @@ from sklearn.model_selection._split import check_cv
 from sklearn.model_selection._validation import _fit_and_score, _insert_error_scores, _warn_or_raise_about_fit_failures
 from sklearn.utils._param_validation import HasMethods, Interval, StrOptions
 from sklearn.utils.parallel import Parallel, delayed
-from sklearn.utils.validation import indexable
-
-try:
-    from sklearn.utils.validation import _check_fit_params
-except ImportError:
-    # sklearn >=1.4
-    from sklearn.utils.validation import _check_method_params as _check_fit_params
+from sklearn.utils.validation import _check_fit_params, indexable
 
 __all__ = ["GridSearchCV", "RandomizedSearchCV"]
 
