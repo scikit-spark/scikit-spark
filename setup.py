@@ -9,11 +9,11 @@ keywords = [
     "sklearn",
     "machine learning",
     "random search",
-    "grid search"
+    "grid search",
 ]
 
 install_requires = [
-    "scikit-learn~=1.0",
+    "scikit-learn>1.0,<1.4",
 ]
 
 with open("README.md", "r") as fh:
@@ -26,7 +26,7 @@ setup(
     author_email="g.n.sivalingam@gmail.com",
     description=description,
     long_description=long_description,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     keywords=keywords,
     package_dir={"": "python"},
     packages=find_packages("python", exclude="tests"),
@@ -35,7 +35,7 @@ setup(
     extras_require={
         "spark": ["pyspark[sql]~=3.0"],
     },
-    license="Apache 2.0"
+    license="Apache 2.0",
 )
 
 # TODO add classifiers

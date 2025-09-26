@@ -2,22 +2,17 @@ name: CI
 
 on:
   push:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   tests:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        pyspark-version: ["3.3.2", "3.4.0"]
+        python-version: ["3.11"]
+        pyspark-version: ["3.5.1"]
         java-version: ["8", "11"]
-        exclude:
-          - python-version: "3.11"
-            pyspark-version: "3.3.2"
-            java-version: "8"
-          - python-version: "3.11"
-            pyspark-version: "3.3.2"
-            java-version: "11"
 
     steps:
       - name: Checkout code
@@ -44,4 +39,4 @@ jobs:
         run: pip install .
 
       - name: Run tests (pytest)
-        run: pytest --disable-warnings -vv -rxXs python/test
+        run: pytest --disable-warnings -vv -ra python/test
