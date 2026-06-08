@@ -18,15 +18,14 @@ from itertools import product
 
 import numpy as np
 from pyspark.sql import SparkSession
-from sklearn.base import clone, is_classifier
-from sklearn.metrics import check_scoring
-from sklearn.metrics._scorer import _check_multimetric_scoring, get_scorer_names
+from sklearn.base import _fit_context, clone, is_classifier
+from sklearn.metrics._scorer import _MultimetricScorer, get_scorer_names
 from sklearn.model_selection._search import BaseSearchCV, ParameterGrid, ParameterSampler
 from sklearn.model_selection._split import check_cv
 from sklearn.model_selection._validation import _fit_and_score, _insert_error_scores, _warn_or_raise_about_fit_failures
 from sklearn.utils._param_validation import HasMethods, Interval, StrOptions
 from sklearn.utils.parallel import Parallel, delayed
-from sklearn.utils.validation import _check_fit_params, indexable
+from sklearn.utils.validation import _check_method_params, indexable
 
 __all__ = ["GridSearchCV", "RandomizedSearchCV"]
 
@@ -161,7 +160,7 @@ class SparkBaseSearchCV(BaseSearchCV):
                 f"splits, got {len(out) // n_candidates}"
             )
 
-    def _run_sklearn_fit(self, X, y, base_estimator, groups, cv_orig, n_splits, refit_metric, fit_and_score_kwargs):
+    def _run_sklearn_fit(self, X, y, base_estimator, split_params, cv_orig, n_splits, refit_metric, fit_and_score_kwargs):
         parallel = Parallel(n_jobs=self.n_jobs, pre_dispatch=self.pre_dispatch)
         results = {}
         with parallel:
@@ -193,7 +192,7 @@ class SparkBaseSearchCV(BaseSearchCV):
                         **fit_and_score_kwargs,
                     )
                     for (cand_idx, parameters), (split_idx, (train, test)) in product(
-                        enumerate(candidate_params), enumerate(cv.split(X, y, groups))
+                        enumerate(candidate_params), enumerate(cv.split(X, y, **split_params))
                     )
                 )
 
@@ -236,7 +235,7 @@ class SparkBaseSearchCV(BaseSearchCV):
 
             return results, refit_metric
 
-    def _run_skspark_fit(self, X, y, base_estimator, groups, cv_orig, n_splits, refit_metric, fit_and_score_kwargs):
+    def _run_skspark_fit(self, X, y, base_estimator, split_params, cv_orig, n_splits, refit_metric, fit_and_score_kwargs):
         results = {}
         all_candidate_params = []
         all_out = []
@@ -250,7 +249,7 @@ class SparkBaseSearchCV(BaseSearchCV):
             param_grid = [
                 ((cand_idx, parameters), (split_idx, (train, test)))
                 for (cand_idx, parameters), (split_idx, (train, test))
-                in product(enumerate(candidate_params), enumerate(cv.split(X, y, groups)))
+                in product(enumerate(candidate_params), enumerate(cv.split(X, y, **split_params)))
             ]
 
             # empty grids fail during execution, so need to apply check here
@@ -346,7 +345,11 @@ class SparkBaseSearchCV(BaseSearchCV):
 
         return results, refit_metric
 
-    def fit(self, X, y=None, *, groups=None, **fit_params):
+    @_fit_context(
+        # *SearchCV.estimator is not validated yet
+        prefer_skip_nested_validation=False
+    )
+    def fit(self, X, y=None, **params):
         """Run fit with all sets of parameters.
 
         Parameters
@@ -361,48 +364,39 @@ class SparkBaseSearchCV(BaseSearchCV):
             Target relative to X for classification or regression;
             None for unsupervised learning.
 
-        groups : array-like of shape (n_samples,), default=None
-            Group labels for the samples used while splitting the dataset into
-            train/test set. Only used in conjunction with a "Group" :term:`cv`
-            instance (e.g., :class:`~sklearn.model_selection.GroupKFold`).
-
-        **fit_params : dict of str -> object
-            Parameters passed to the `fit` method of the estimator.
+        **params : dict of str -> object
+            Parameters passed to the ``fit`` method of the estimator, the scorer,
+            and the CV splitter.
 
             If a fit parameter is an array-like whose length is equal to
             `num_samples` then it will be split across CV groups along with `X`
             and `y`. For example, the :term:`sample_weight` parameter is split
-            because `len(sample_weights) = len(X)`.
+            because `len(sample_weights) = len(X)`. However, `groups` is passed
+            to the splitter configured via the `cv` parameter of the
+            constructor and is used to perform the split.
 
         Returns
         -------
         self : object
             Instance of fitted estimator.
         """
-        self._validate_params()
         estimator = self.estimator
-        refit_metric = "score"
+        scorers, refit_metric = self._get_scorers()
 
-        if callable(self.scoring):
-            scorers = self.scoring
-        elif self.scoring is None or isinstance(self.scoring, str):
-            scorers = check_scoring(self.estimator, self.scoring)
-        else:
-            scorers = _check_multimetric_scoring(self.estimator, self.scoring)
-            self._check_refit_for_multimetric(scorers)
-            refit_metric = self.refit
+        X, y = indexable(X, y)
+        params = _check_method_params(X, params=params)
 
-        X, y, groups = indexable(X, y, groups)
-        fit_params = _check_fit_params(X, fit_params)
+        routed_params = self._get_routed_params_for_fit(params)
 
         cv_orig = check_cv(self.cv, y, classifier=is_classifier(estimator))
-        n_splits = cv_orig.get_n_splits(X, y, groups)
+        n_splits = cv_orig.get_n_splits(X, y, **routed_params.splitter.split)
 
         base_estimator = clone(self.estimator)
 
         fit_and_score_kwargs = dict(
             scorer=scorers,
-            fit_params=fit_params,
+            fit_params=routed_params.estimator.fit,
+            score_params=routed_params.scorer.score,
             return_train_score=self.return_train_score,
             return_n_test_samples=True,
             return_times=True,
@@ -420,7 +414,7 @@ class SparkBaseSearchCV(BaseSearchCV):
             X=X,
             y=y,
             base_estimator=base_estimator,
-            groups=groups,
+            split_params=routed_params.splitter.split,
             cv_orig=cv_orig,
             n_splits=n_splits,
             refit_metric=refit_metric,
@@ -450,9 +444,9 @@ class SparkBaseSearchCV(BaseSearchCV):
             )
             refit_start_time = time.time()
             if y is not None:
-                self.best_estimator_.fit(X, y, **fit_params)
+                self.best_estimator_.fit(X, y, **routed_params.estimator.fit)
             else:
-                self.best_estimator_.fit(X, **fit_params)
+                self.best_estimator_.fit(X, **routed_params.estimator.fit)
             refit_end_time = time.time()
             self.refit_time_ = refit_end_time - refit_start_time
 
@@ -460,7 +454,10 @@ class SparkBaseSearchCV(BaseSearchCV):
                 self.feature_names_in_ = self.best_estimator_.feature_names_in_
 
         # Store the only scorer not as a dict for single metric evaluation
-        self.scorer_ = scorers
+        if isinstance(scorers, _MultimetricScorer):
+            self.scorer_ = scorers._scorers
+        else:
+            self.scorer_ = scorers
 
         self.cv_results_ = results
         self.n_splits_ = n_splits
