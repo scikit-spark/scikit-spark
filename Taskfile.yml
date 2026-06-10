@@ -1,0 +1,20 @@
+version: "3"
+
+tasks:
+  test:fast:
+    desc: Run the test suite against the local Python/Spark environment
+    env:
+      PYSPARK_PYTHON:
+        sh: which python
+    cmds:
+      - pytest --disable-warnings -vv -rxXs python/test
+
+  test:act:
+    desc: Run the full CI pipeline locally in Docker via act (image pinned in .actrc)
+    cmds:
+      - act
+
+  test:act:fast:
+    desc: Fast iterative act run — reuses containers, skips image pull (non-hermetic)
+    cmds:
+      - act --reuse --pull=false

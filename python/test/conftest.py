@@ -62,9 +62,13 @@ def pytest_collection_modifyitems(session, config, items):
     """
     tests_to_skip = [
         "test_search_cv_verbose_3",
+        # Stateful scorer counts its own calls to emit a NaN on every 5th call;
+        # distributing the CV fits across Spark workers pickles the scorer per
+        # worker, resetting the counter, so the warning count differs.
+        "test_searchcv_raise_warning_with_non_finite_score[RandomizedSearchCV",
     ]
 
     skip_listed = pytest.mark.skip(reason="skipped")
     for item in items:
-        if item.name.startswith(*tests_to_skip):
+        if item.name.startswith(tuple(tests_to_skip)):
             item.add_marker(skip_listed)
