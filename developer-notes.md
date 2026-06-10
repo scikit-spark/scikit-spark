@@ -37,7 +37,7 @@ Releases go out of CI via PyPI Trusted Publishing (OIDC) — no tokens are store
    section to `changelog.md` describing the work.
 2. Merge to `master`. The CI pipeline runs the test matrix, then publishes
    `x.y.z.dev<run_number>` to **TestPyPI** as a packaging smoke test (unique per push).
-3. Go to **Actions → Release → Run workflow** (on `master`). It:
+3. Go to **Actions → CI → Run workflow** (on `master`). The `publish-pypi` job:
    - re-runs the full test matrix,
    - validates `vx.y.z` is not already a git tag and `x.y.z` is not already on PyPI,
    - builds, then creates and pushes the annotated tag `vx.y.z`,
@@ -56,7 +56,7 @@ before pushing.
 
 ### One-time setup (already done — for reference)
 - **PyPI** → `scikit-spark` → Publishing → Trusted Publisher: owner `scikit-spark`,
-  repo `scikit-spark`, workflow `release.yml`, environment `pypi`.
+  repo `scikit-spark`, workflow `pipeline.yml`, environment `pypi`.
 - **TestPyPI** → pending publisher: same repo, workflow `pipeline.yml`, environment
   `testpypi` (creates the project on first publish).
 - **GitHub** → Settings → Environments → `pypi` and `testpypi`.
