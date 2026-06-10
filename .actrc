@@ -1,5 +1,1 @@
 -P ubuntu-24.04=catthehacker/ubuntu:act-24.04
-# Run matrix jobs serially: act shares one cached toolcache (hence one
-# site-packages) across same-Python jobs, so parallel jobs installing different
-# pyspark versions clobber each other's jars mid-run.
---concurrent-jobs 1

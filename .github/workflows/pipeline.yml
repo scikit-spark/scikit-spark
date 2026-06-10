@@ -32,6 +32,15 @@ jobs:
           java-version: ${{ matrix.java-version }}
           distribution: adopt
 
+      # Use a per-job virtualenv so concurrent matrix jobs get isolated
+      # site-packages. Under `act`, same-Python jobs otherwise share one cached
+      # toolcache and clobber each other's pyspark jars mid-run. Adding it to
+      # GITHUB_PATH makes every later step's pip/pytest resolve to this venv.
+      - name: Create virtualenv
+        run: |
+          python -m venv .venv
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+
       - name: Install pyspark
         run: pip install pyspark==${{ matrix.pyspark-version }}
 
