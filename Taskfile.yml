@@ -13,3 +13,8 @@ tasks:
     desc: Run the full CI pipeline locally in Docker via act (image pinned in .actrc)
     cmds:
       - act
+
+  test:act:fast:
+    desc: Fast iterative act run — reuses containers, skips image pull (non-hermetic)
+    cmds:
+      - act --reuse --pull=false

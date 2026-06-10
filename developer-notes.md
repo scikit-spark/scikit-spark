@@ -29,6 +29,7 @@ Prerequisites:
 Commands:
 - `task test:fast` — run the suite against your local Python/Spark environment (fast).
 - `task test:act` — run the full GitHub Actions pipeline locally in Docker via `act`.
+- `task test:act:fast` — faster iterative `act` run that reuses containers and skips the image pull. Non-hermetic: do a plain `task test:act` before trusting a green result.
 
 The `act` runner image is pinned in `.actrc`.
 
