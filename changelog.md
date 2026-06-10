@@ -1,8 +1,9 @@
 # 1.0.0
-- Dropped support for scikit-learn 0.x (0.19–0.22); now requires scikit-learn ~=1.0
-- Added scikit-learn 1.x support for GridSearchCV and RandomizedSearchCV
-- Migrated CI from Travis to GitHub Actions with a Python / PySpark / Java test matrix
+- Dropped support for scikit-learn 0.x (0.19–0.22)
+- Added support for scikit-learn 1.1 through 1.8 for GridSearchCV and RandomizedSearchCV (per-minor vendored `_search.py` under `skspark/sklearn_1_<minor>`, selected at runtime by installed version)
+- Migrated CI from Travis to GitHub Actions with a Python / PySpark / Java / scikit-learn test matrix
 - Switched the test runner from nose to pytest
+- Removed the dead nose-era `python/run-tests.sh`
 - Dropped testing for Java 8 and Python 3.8 / 3.9
 
 # 0.4.0

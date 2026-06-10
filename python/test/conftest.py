@@ -9,6 +9,23 @@ from skspark.model_selection import RandomizedSearchCV as SkSparkRandomizedSearc
 from skspark.model_selection import GridSearchCV as SkSparkGridSearchCV
 
 
+@pytest.fixture
+def enable_slep006():
+    """Enable metadata routing (SLEP006) for tests that require it.
+
+    scikit-learn defines this fixture in its own ``conftest.py``, which pytest
+    does not load when we run the imported tests from our test directory. The
+    metadata-routing tests added in sklearn 1.4 (e.g.
+    ``test_multi_metric_search_forwards_metadata``) depend on it, so we provide
+    an equivalent here. Only instantiated by tests that request it, so it is
+    inert on versions predating ``enable_metadata_routing``.
+    """
+    from sklearn import config_context
+
+    with config_context(enable_metadata_routing=True):
+        yield
+
+
 @pytest.fixture(scope="session")
 def spark():
     spark_session = SparkSession.builder\
@@ -58,8 +75,16 @@ def pytest_collection_modifyitems(session, config, items):
     The following tests (from sklearn) are removed:
     * test_search_cv_verbose_3 - this checks the output from stderr which is swallowed by the pyspark executors
 
+    Some skips are scikit-learn-version specific (older releases behave
+    differently against the modern numpy/scipy stack we test on); these are
+    gated on the installed minor version.
+
     See https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_collection_modifyitems
     """
+    import sklearn
+
+    minor = int(sklearn.__version__.split(".")[1])
+
     tests_to_skip = [
         "test_search_cv_verbose_3",
         # Stateful scorer counts its own calls to emit a NaN on every 5th call;
@@ -67,6 +92,19 @@ def pytest_collection_modifyitems(session, config, items):
         # worker, resetting the counter, so the warning count differs.
         "test_searchcv_raise_warning_with_non_finite_score[RandomizedSearchCV",
     ]
+
+    if minor == 1:
+        # sklearn 1.1's _format_results ranks failed (NaN) fits with
+        # `rankdata(-means).astype(int32)`; modern scipy's rankdata propagates
+        # NaN, so the NaN cast to int32 becomes INT32_MIN instead of the worst
+        # rank. This is an upstream 1.1 + modern-scipy bug (fixed by the
+        # NaN-aware ranking added in 1.2), unrelated to Spark.
+        tests_to_skip.append("test_grid_search_failing_classifier")
+        # The GridSearchCV variant of the stateful-scorer test above also trips
+        # the per-worker counter reset on 1.1 (1.2+ happen to pass it).
+        tests_to_skip.append(
+            "test_searchcv_raise_warning_with_non_finite_score[GridSearchCV"
+        )
 
     skip_listed = pytest.mark.skip(reason="skipped")
     for item in items:
