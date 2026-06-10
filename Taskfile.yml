@@ -18,3 +18,10 @@ tasks:
     desc: Fast iterative act run — reuses containers, skips image pull (non-hermetic)
     cmds:
       - act --reuse --pull=false
+
+  build:
+    desc: Build the sdist/wheel and validate packaging metadata
+    cmds:
+      - rm -rf dist
+      - python -m build
+      - twine check dist/*

@@ -23,7 +23,7 @@ pip install scikit-spark[spark]
 ```
 
 It is currently tested with Spark 3.3.2 and 3.4.0, but should work with
-older versions (e.g. Spark 2.4.x). Python versions 3.8 and up are also
+older versions (e.g. Spark 2.4.x). Python versions 3.10 and up are also
 currently tested, though 3.11 is only supported with PySpark 3.4.0.
 
 ### Supported scikit-learn versions
