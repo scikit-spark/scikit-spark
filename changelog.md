@@ -1,3 +1,7 @@
+# 1.1.0
+- scikit-learn 1.4–1.8 support added. Reworked `SparkBaseSearchCV.fit` to the sklearn 1.4+ metadata-routing API (SLEP006): `_check_fit_params` → `_check_method_params`, `fit(self, X, y=None, **params)` with `_get_routed_params_for_fit`, `score_params` threaded into `_fit_and_score`, and the `@_fit_context` decorator replacing the manual `_validate_params()`. `groups` is now passed through `routed_params.splitter.split`.
+- Bumped `install_requires` to `scikit-learn~=1.8`; dev pins to `scikit-learn==1.8.0` / `pyspark==3.5.1` and numpy/scipy floors to the sklearn 1.8 minimums.
+
 # 0.4.0
 - scikit-learn 0.22 support added
 
