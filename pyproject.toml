@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scikit-spark"
+version = "1.0.0"
+description = "Spark acceleration for Scikit-Learn cross validation techniques"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Ganesh N. Sivalingam", email = "g.n.sivalingam@gmail.com" },
+]
+keywords = [
+    "spark",
+    "pyspark",
+    "scikit-learn",
+    "sklearn",
+    "machine learning",
+    "random search",
+    "grid search",
+]
+dependencies = [
+    # Per-minor support is vendored under skspark/sklearn_1_<minor>; the exact
+    # version is pinned per CI matrix row. See developer-notes.md.
+    "scikit-learn>=1.1,<1.9",
+    # numpy<2: sklearn 1.1-1.3 wheels are built against the numpy 1.x ABI and
+    # crash on numpy 2; numpy 1.26 is runtime-compatible across the 1.1-1.8 range.
+    "numpy>=1.22,<2",
+]
+
+[project.optional-dependencies]
+spark = ["pyspark[sql]~=3.0"]
+
+[project.urls]
+Homepage = "https://github.com/scikit-spark/scikit-spark"
+
+[tool.setuptools.packages.find]
+where = ["python"]
+exclude = ["test*"]
