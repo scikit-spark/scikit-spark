@@ -5,7 +5,7 @@ import sklearn
 # Supported scikit-learn minor versions. Each maps to a vendored
 # ``skspark.sklearn_1_<minor>`` package holding that release's patched
 # ``_search.py``. See developer-notes.md.
-_SUPPORTED_MINORS = (1, 2, 3, 4, 5, 6, 7)
+_SUPPORTED_MINORS = (1, 2, 3, 4, 5, 6, 7, 8)
 
 _major, _minor = (int(part) for part in sklearn.__version__.split(".")[:2])
 
