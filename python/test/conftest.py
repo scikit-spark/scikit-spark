@@ -9,6 +9,23 @@ from skspark.model_selection import RandomizedSearchCV as SkSparkRandomizedSearc
 from skspark.model_selection import GridSearchCV as SkSparkGridSearchCV
 
 
+@pytest.fixture
+def enable_slep006():
+    """Enable metadata routing (SLEP006) for tests that require it.
+
+    scikit-learn defines this fixture in its own ``conftest.py``, which pytest
+    does not load when we run the imported tests from our test directory. The
+    metadata-routing tests added in sklearn 1.4 (e.g.
+    ``test_multi_metric_search_forwards_metadata``) depend on it, so we provide
+    an equivalent here. Only instantiated by tests that request it, so it is
+    inert on versions predating ``enable_metadata_routing``.
+    """
+    from sklearn import config_context
+
+    with config_context(enable_metadata_routing=True):
+        yield
+
+
 @pytest.fixture(scope="session")
 def spark():
     spark_session = SparkSession.builder\
