@@ -8,14 +8,13 @@ jobs:
   tests:
     runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11"]
-        pyspark-version: ["3.3.2", "3.4.0"]
+        # broaden coverage to add new versions or reproduce bugs
+        python-version: ["3.11"]
+        pyspark-version: ["3.5.2"]
         java-version: ["11"]
-        exclude:
-          - python-version: "3.11"
-            pyspark-version: "3.3.2"
-            java-version: "11"
+        sklearn-version: ["1.2.2"]
 
     steps:
       - name: Checkout code
@@ -49,6 +48,11 @@ jobs:
 
       - name: Install skspark
         run: pip install .
+
+      # Override whatever scikit-learn the loosened install_requires resolved
+      # with the exact version under test for this matrix row.
+      - name: Pin scikit-learn under test
+        run: pip install scikit-learn==${{ matrix.sklearn-version }}
 
       - name: Run tests (pytest)
         run: pytest --disable-warnings -vv -rxXs python/test

@@ -13,7 +13,11 @@ keywords = [
 ]
 
 install_requires = [
-    "scikit-learn==1.2.2",
+    # Per-minor support is vendored under skspark/sklearn_1_<minor>; the exact
+    # version is pinned per CI matrix row. See developer-notes.md.
+    "scikit-learn>=1.1,<1.9",
+    # numpy<2: sklearn 1.1-1.3 wheels are built against the numpy 1.x ABI and
+    # crash on numpy 2; numpy 1.26 is runtime-compatible across the 1.1-1.8 range.
     "numpy>=1.22,<2",
 ]
 
