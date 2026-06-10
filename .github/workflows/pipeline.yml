@@ -4,6 +4,14 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      target:
+        description: "Publish target for this manual run"
+        type: choice
+        default: testpypi
+        options:
+          - testpypi
+          - pypi
 
 jobs:
   tests:
@@ -59,7 +67,9 @@ jobs:
   # collide.
   publish-testpypi:
     needs: tests
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+      (github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi')
     runs-on: ubuntu-24.04
     environment: testpypi
     permissions:
@@ -100,7 +110,9 @@ jobs:
   # PyPI publish.
   publish-pypi:
     needs: tests
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.target == 'pypi' &&
+      github.ref == 'refs/heads/master'
     runs-on: ubuntu-24.04
     environment: pypi
     permissions:
