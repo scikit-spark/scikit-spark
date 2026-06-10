@@ -37,7 +37,9 @@ Releases go out of CI via PyPI Trusted Publishing (OIDC) — no tokens are store
    section to `changelog.md` describing the work.
 2. Merge to `master`. The CI pipeline runs the test matrix, then publishes
    `x.y.z.dev<run_number>` to **TestPyPI** as a packaging smoke test (unique per push).
-3. Go to **Actions → CI → Run workflow** (on `master`). The `publish-pypi` job:
+3. Go to **Actions → CI → Run workflow** (on `master`) and set **target = `pypi`**
+   (the default is `testpypi`, which lets you re-trigger a dev publish on demand
+   for debugging without pushing a dummy commit). The `publish-pypi` job:
    - re-runs the full test matrix,
    - validates `vx.y.z` is not already a git tag and `x.y.z` is not already on PyPI,
    - builds, then creates and pushes the annotated tag `vx.y.z`,
